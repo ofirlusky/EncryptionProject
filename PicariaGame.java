@@ -2,9 +2,16 @@ import java.awt.Point;
 
 public class PicariaGame {
 
+    public static final int TOTAL_NODES=13;
+    private Node board[]; // 0 empty , 1 player1 , 2 player2
+
+    private Player playerNumberOne;
+    private Player playerNumberTwo;
+    private PlayerID currentTurn;
+
 
     private final int[][] neighbors = {
-            {1, 3, 5},                // 0
+            {1, 3, 5},                // 0 רשימת סמיכויות לפי האינדקס
             {0, 2, 3, 4, 6},          // 1
             {1, 4, 7},                // 2
             {0, 1, 5, 6},             // 3
@@ -19,4 +26,15 @@ public class PicariaGame {
             {7, 9, 11}                // 12
     };
 
+    public PicariaGame() {
+        this.board = new Node[TOTAL_NODES];
+        for(int i=0; i< PicariaGame.TOTAL_NODES; i++)
+        {
+            this.board[i] = new Node(i);
+        }
+
+        this.playerNumberOne = new Player(PlayerID.PLAYER_ONE);
+        this.playerNumberTwo = new Player(PlayerID.PLAYER_TWO);
+        this.currentTurn = PlayerID.PLAYER_ONE;
+    }
 }
