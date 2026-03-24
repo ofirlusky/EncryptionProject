@@ -26,12 +26,6 @@ public class Player
 
 
 
-
-
-
-
-
-
 // getters and setters
     public PlayerID getPlayerID() {
         return this.playerID;

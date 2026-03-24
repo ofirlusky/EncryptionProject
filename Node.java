@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 public class Node
 {
     private PieceValue currentPieceValue;
@@ -9,6 +12,11 @@ public class Node
         this.currentPieceValue = PieceValue.EMPTY;
         this.IDofNode = IDofNode;
     }
+
+    public void setIDofNode(int IDofNode) {
+        this.IDofNode = IDofNode;
+    }
+
 
     public PieceValue getCurrentPieceValue() {
         return this.currentPieceValue;
