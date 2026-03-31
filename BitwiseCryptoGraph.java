@@ -7,7 +7,7 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
 
     private int boardMask;
 
-    public BitwiseCryptoGraph(Node[] finalBoard, Map<Direction, List<Integer>>[] neighborsByDir) {
+    public BitwiseCryptoGraph(Node[] finalBoard) {
         super(finalBoard);
         this.boardMask = generateBoardMask();
         buildGraph(neighborsByDir);
@@ -30,7 +30,7 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
         int vId = v.getIDofNode();
         int su = StatuseOfTheNode(u);
 
-        // מכפיל במספרים ראשוניים
+        // מכפיל במספרים ראשוניים למנוע כפילויות
         int base = (uId * 17) ^ (vId * 31);
         int shifted = base << (su + 1);
         int combined = shifted ^ boardMask;
@@ -39,19 +39,13 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
         return weight;
     }
 
-    public int StatuseOfTheNode(Node node)
-    {
-        int su = 0;
-        switch (node.getCurrentPieceValue()) {
-            case OCCUPIED_P1:
-                su = 1;
-                break;
-            case OCCUPIED_P2:
-                su = 2;
-                break;
-        }
-        return su;
+    @Override
+    protected void printSpecificDetails() {
+        System.out.println("Bitwise Avalanche Weights:");
+
     }
+
+
 
 
 

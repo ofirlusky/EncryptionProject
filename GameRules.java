@@ -47,7 +47,12 @@ public class GameRules
                     if (board[v].getCurrentPieceValue() == val &&
                             board[w].getCurrentPieceValue() == val) {
 
-                            testCryptoGraphPrint(board,neighborsByDir);
+
+                        //KruskalCryptoGraph graph = new KruskalCryptoGraph(board);
+                           // graph.printMatrix();
+
+                            BitwiseCryptoGraph b = new BitwiseCryptoGraph(board);
+                            b.printMatrix();
                             return (val == PieceValue.OCCUPIED_P1) ? PlayerID.PLAYER_ONE : PlayerID.PLAYER_TWO;
 
                     }
@@ -59,32 +64,9 @@ public class GameRules
 
 
 
-    // פונקציית בדיקה זמנית
-    public static void testCryptoGraphPrint(Node[] board, Map<Direction, List<Integer>>[] neighborsByDir) {
-        System.out.println("--- מתחיל יצירת גרף קריפטוגרפי ---");
 
-        BitwiseCryptoGraph cryptoGraph = new BitwiseCryptoGraph(board, neighborsByDir);
 
-        System.out.println("\nedges - ");
-        for (Edge edge : cryptoGraph.getEdges()) {
-            System.out.println(edge.toString());
-        }
 
-        System.out.println("\nAdjacency Matrix ");
-        int[][] matrix = cryptoGraph.getWeightMatrix();
-
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                if (matrix[i][j] >= Integer.MAX_VALUE / 2) {
-                    System.out.print("INF\t");
-                } else {
-                    System.out.print(matrix[i][j] + "\t");
-                }
-            }
-            System.out.println();
-        }
-
-    }
 
 
 

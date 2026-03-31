@@ -41,7 +41,7 @@ public class PicariaGame {
     private int numberOfpiecesPlaced = 0;
     private Node selectedNode = null;
     private boolean isGameOver = false;
-    private Map<Direction, List<Integer>>[] neighborsByDir;
+    private static Map<Direction, List<Integer>>[] neighborsByDir;
 
     public PicariaGame() {
         this.board = new Node[TOTAL_NODES];
@@ -176,5 +176,5 @@ public class PicariaGame {
         return numberOfpiecesPlaced;
     }
 
-    public Map<Direction, List<Integer>>[] getNeighborsByDir() { return neighborsByDir; }
+    public static Map<Direction, List<Integer>>[] getNeighborsByDir() { return neighborsByDir; }
 }
