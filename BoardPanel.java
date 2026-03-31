@@ -21,15 +21,13 @@ public class BoardPanel extends JPanel {
     }
 
 
-    //כי אני חייב להמיר פיקסל לאינדקס של צומת  אני משתמש פה בנוסחת המרחק במישור
+
     private void handleMouseClick(int mouseX, int mouseY) {
         int padding = 100;
         int scale = 100;
         for (int i = 0; i < PicariaGame.TOTAL_NODES; i++) {
-
             int nodeX = padding + (PicariaGame.COORDS[i][0] * scale);
             int nodeY = padding + (PicariaGame.COORDS[i][1] * scale);
-
 
             double distance = Math.sqrt(Math.pow(mouseX - nodeX, 2) + Math.pow(mouseY - nodeY, 2));
 
@@ -54,7 +52,7 @@ public class BoardPanel extends JPanel {
         int nodeOffset = nodeSize / 2;
         int pieceOffset = pieceSize / 2;
 
-        g.setColor(Color.GRAY);
+        g.setColor(Color.WHITE);
         for (int i = 0; i < PicariaGame.TOTAL_NODES; i++) {
 
             int x1 = padding + (PicariaGame.COORDS[i][0] * scale);
