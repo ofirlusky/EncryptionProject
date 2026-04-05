@@ -31,9 +31,6 @@ public abstract class BaseCryptoGraph {
     }
 
 
-    // ==========================================
-// בתוך BaseCryptoGraph
-// ==========================================
 
     protected void fillWeightMatrix() {
         int size = vertices.length;
@@ -90,21 +87,19 @@ public abstract class BaseCryptoGraph {
         System.out.println("\n--- Adjacency Matrix (Final Weights) ---");
         int n = vertices.length;
 
-        // כותרת עמודות
         System.out.print("ID\t");
         for (int i = 0; i < n; i++) System.out.print(i + "\t");
         System.out.println("\n" + "-".repeat(n * 8));
 
         for (int i = 0; i < n; i++) {
-            // כותרת שורה
             System.out.print(i + " |\t");
             for (int j = 0; j < n; j++) {
                 int val = weightMatrix[i][j];
 
                 if (val >= INF) {
-                    System.out.print("∞\t"); // הדפסת אינסוף בצורה יפה
+                    System.out.print("∞\t");
                 } else if (i == j) {
-                    System.out.print("0\t"); // אלכסון
+                    System.out.print("0\t");
                 } else {
                     System.out.print(val + "\t");
                 }

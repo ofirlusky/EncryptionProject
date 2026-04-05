@@ -48,8 +48,11 @@ public class GameRules
                             board[w].getCurrentPieceValue() == val) {
 
 
-                            BaseCryptoGraph graph = new KruskalCryptoGraph(board);
-                            graph.printMatrix();
+                            //BaseCryptoGraph graph = new KruskalCryptoGraph(board);
+                            //graph.printMatrix();
+
+                        BaseCryptoGraph graph = new MaxFlowCryptoGraph(board);
+                        graph.printMatrix();
 
                         //BaseCryptoGraph b = new BitwiseCryptoGraph(board);
                             //b.printMatrix();
