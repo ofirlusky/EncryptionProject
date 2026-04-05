@@ -5,7 +5,6 @@ import java.util.Map;
 public abstract class BaseCryptoGraph {
 
     protected Node[] vertices;
-    protected List<Edge> edges;
     protected int[][] weightMatrix;
     protected final int INF = Integer.MAX_VALUE / 2;
 
@@ -15,7 +14,6 @@ public abstract class BaseCryptoGraph {
 
     public BaseCryptoGraph(Node[] finalBoard) {
         this.vertices = finalBoard;
-        this.edges = new ArrayList<>();
         neighborsByDir = PicariaGame.getNeighborsByDir();
 
 
@@ -27,34 +25,43 @@ public abstract class BaseCryptoGraph {
                 weightMatrix[i][j] = (i == j) ? 0 : INF;
             }
         }
+
+
+
     }
 
-    // פה אני בונה בעצם את הגרף - לא משנה איזה גרף זה כל השלושה הולכים להשתמש בזה- ככה אני חוסך ים קוד
-    protected void buildGraph(Map<Direction, List<Integer>>[] neighborsByDir) {
-        for (int i = 0; i < neighborsByDir.length; i++) {
-            Node sourceNode = vertices[i];
 
-            if (neighborsByDir[i] != null) {
-                for (List<Integer> neighborsList : neighborsByDir[i].values()) {
-                    for (int neighborId : neighborsList) {
+    // ==========================================
+// בתוך BaseCryptoGraph
+// ==========================================
 
-                        if (i < neighborId) {
-                            Node destNode = vertices[neighborId];
-                            int weight = calculateEdgeWeight(sourceNode, destNode);
-
-                            Edge newEdge = new Edge(sourceNode, destNode, weight);
-                            this.edges.add(newEdge);
-
-                            weightMatrix[i][neighborId] = weight;
-                            weightMatrix[neighborId][i] = weight;
-                        }
-                    }
+    protected void fillWeightMatrix() {
+        int size = vertices.length;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (i == j) {
+                    weightMatrix[i][j] = 0;
+                }
+                else if (areNeighbors(i, j)) {
+                    weightMatrix[i][j] = calculateEdgeWeight(vertices[i], vertices[j]);
+                }
+                else {
+                    weightMatrix[i][j] = INF;
                 }
             }
         }
     }
+    protected boolean areNeighbors(int uId, int vId) {
+        if (neighborsByDir[uId] == null) return false;
 
-    // פה כולם הולכים לדרוס את הפונקציה הזאת
+        for (List<Integer> neighborsList : neighborsByDir[uId].values()) {
+            if (neighborsList.contains(vId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected abstract int calculateEdgeWeight(Node u, Node v);
 
 
@@ -72,50 +79,11 @@ public abstract class BaseCryptoGraph {
         return su;
     }
 
-    public void updateWeightMatrix() {
-        int size = vertices.length;
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                this.weightMatrix[i][j] = calculateEdgeWeight(vertices[i], vertices[j]);
-            }
-        }
-    }
 
 
-    // פונקציה שהבנים יממשו כל אחד לפי הצרכים שלו
-    protected abstract void printSpecificDetails();
 
-    public void printGraphReport() {
-        System.out.println("\n====================================================");
-        System.out.println("REPORT FOR: " + this.getClass().getSimpleName());
-        System.out.println("====================================================");
 
-        // 1. הדפסת הנתונים הספציפיים של הבן (קרוסקל ידפיס MST, ביטים ידפיס חישובים)
-        printSpecificDetails();
 
-        // 2. הדפסת המטריצה הגנרית
-        System.out.println("\nAdjacency Matrix:");
-        int size = vertices.length;
-
-        // כותרות
-        System.out.print("ID\t");
-        for (int i = 0; i < size; i++) System.out.print(i + "\t");
-        System.out.println("\n" + "-".repeat(size * 8));
-
-        for (int i = 0; i < size; i++) {
-            System.out.print(i + " |\t");
-            for (int j = 0; j < size; j++) {
-                int val = weightMatrix[i][j];
-                if (val >= INF) {
-                    System.out.print("∞\t");
-                } else {
-                    System.out.print(val + "\t");
-                }
-            }
-            System.out.println();
-        }
-        System.out.println("====================================================\n");
-    }
 
 
     public void printMatrix() {
@@ -145,11 +113,6 @@ public abstract class BaseCryptoGraph {
         }
     }
 
-
-
-
-    public int[][] getWeightMatrix() { return weightMatrix; }
-    public List<Edge> getEdges() { return edges; }
 
 
 }

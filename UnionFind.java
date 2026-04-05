@@ -1,4 +1,6 @@
 public class UnionFind {
+
+    // אינדקס מספר של משבצת
     private int[] parent;
 
 
@@ -9,6 +11,8 @@ public class UnionFind {
         }
     }
 
+
+    // מחזיר מי הבוס של i צומת
     public int find(int i) {
         if (parent[i] == i) {
             return i;
@@ -16,6 +20,8 @@ public class UnionFind {
         return find(parent[i]);
     }
 
+
+    // שם את אותו מנהל לשני צמתים
     public void union(int i, int j) {
         int rootI = find(i);
         int rootJ = find(j);

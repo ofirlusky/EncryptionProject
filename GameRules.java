@@ -48,11 +48,11 @@ public class GameRules
                             board[w].getCurrentPieceValue() == val) {
 
 
-                        //KruskalCryptoGraph graph = new KruskalCryptoGraph(board);
-                           // graph.printMatrix();
+                            BaseCryptoGraph graph = new KruskalCryptoGraph(board);
+                            graph.printMatrix();
 
-                            BitwiseCryptoGraph b = new BitwiseCryptoGraph(board);
-                            b.printMatrix();
+                        //BaseCryptoGraph b = new BitwiseCryptoGraph(board);
+                            //b.printMatrix();
                             return (val == PieceValue.OCCUPIED_P1) ? PlayerID.PLAYER_ONE : PlayerID.PLAYER_TWO;
 
                     }

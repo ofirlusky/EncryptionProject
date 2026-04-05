@@ -1,12 +1,16 @@
 public class KruskalEdge {
     public int u;
     public int v;
+
+    //כוזר לקרוסקל בבנייה  המשקל הרגיל הדיפולאיבי והטיפש שאני מביא
     public int frictionWeight;
 
+    // משקל סופי
     public int load;
 
 
 
+    // אני מכניס מינימום כי יהיה לי הרבה יותר קל ככה לחפש דברים
     public KruskalEdge(int node1, int node2, int weight) {
         if (node1 < node2) {
             this.u = node1;
@@ -19,6 +23,8 @@ public class KruskalEdge {
         this.load = 0;
     }
 
+
+    // merge sort help this
     public int compareTo(KruskalEdge other) {
         if (this.frictionWeight < other.frictionWeight) return -1;
         if (this.frictionWeight > other.frictionWeight) return 1;

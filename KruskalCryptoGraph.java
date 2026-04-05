@@ -2,10 +2,16 @@ import java.util.*;
 
 public class KruskalCryptoGraph extends BaseCryptoGraph {
 
+
+    //  אני מאחסן פה את כל האלה עם משקלים רגילים באופן זמני !!!
     private KruskalEdge[] allFrictionEdges;
     private int edgeCount;
+    // פה מאחסן את כל האלה ששייכים לעץ של קרוסקל עם load
     private KruskalEdge[] mstEdges;
     private int mstCount;
+
+
+    // רק לגבי עץ פורש מינימלי  1 יש קשת , 0 איו
     private int[][] mstAdjacency;
 
     public KruskalCryptoGraph(Node[] board) {
@@ -20,19 +26,19 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         runKruskal();
         buildMstAdjacency();
         precalculateMstLoads();
-        updateWeightMatrix();
+        fillWeightMatrix();
     }
 
-    private void precalculateMstLoads() {
-        int n = vertices.length;
-        for (int i = 0; i < mstCount; i++) {
-            KruskalEdge e = mstEdges[i];
-            if (e == null) continue;
-            int x = countSubtreeSize(e.u, e.v, n);
-            int y = n - x;
-            e.load = x * y;
-        }
+    private int calculateFriction(Node u, Node v) {
+        int statU = StatuseOfTheNode(u);
+        int statV = StatuseOfTheNode(v);
+        if (statU == 0 && statV == 0) return 1;
+        if (statU == statV && statU != 0) return 3;
+        if (statU == 0 || statV == 0) return 5;
+        return 10;
     }
+
+
 
     private void buildFrictionEdges() {
         int maxEdges = vertices.length * vertices.length;
@@ -78,6 +84,8 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
             }
         }
     }
+
+    // זה כאילו רק בשביך שיהיה יותר מהיא לבדוק אם יש קשת
     private void buildMstAdjacency() {
         int n = vertices.length;
         this.mstAdjacency = new int[n][n];
@@ -92,6 +100,19 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         }
     }
 
+    private void precalculateMstLoads() {
+        int n = vertices.length;
+        for (int i = 0; i < mstCount; i++) {
+            KruskalEdge e = mstEdges[i];
+            if (e == null) continue;
+            int x = countSubtreeSize(e.u, e.v, n);
+            int y = n - x;
+            e.load = x * y;
+        }
+    }
+
+
+    // עוברת רק על העץ MST שלי שיצרתי וסופרת כמה קודקודים לפניה
     private int countSubtreeSize(int u, int v, int n) {
         int size = 1;
 
@@ -155,6 +176,8 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         return -1;
     }
 
+
+    // מביא לי את הקשת בין שני צמתים את אובייקט הקשת
     private KruskalEdge findEdgeInMst(int u, int v) {
         int small = (u < v) ? u : v;
         int big = (u < v) ? v : u;
@@ -170,31 +193,17 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         return null;
     }
 
-    private boolean areNeighbors(int uId, int vId) {
-        if (neighborsByDir[uId] == null) return false;
-        for (List<Integer> neighbors : neighborsByDir[uId].values()) {
-            if (neighbors.contains(vId)) return true;
-        }
-        return false;
-    }
 
-    private int calculateFriction(Node u, Node v) {
-        int statU = StatuseOfTheNode(u);
-        int statV = StatuseOfTheNode(v);
-        if (statU == 0 && statV == 0) return 1;
-        if (statU == statV && statU != 0) return 3;
-        if (statU == 0 || statV == 0) return 5;
-        return 10;
-    }
+
+
 
     @Override
-    protected void printSpecificDetails() {
-        System.out.println("MST Edges and Loads (Kruskal):");
-        for (int i = 0; i < mstCount; i++) {
-            KruskalEdge e = mstEdges[i];
-            if (e != null) {
-                System.out.println("  - Edge " + e.u + " <-> " + e.v + " | Weight: " + e.load);
-            }
-        }
+    public  void printMatrix() {
+        System.out.println("this is the pelet of KRUSKAL G");
+        super.printMatrix();
+
     }
+
+
+
 }
