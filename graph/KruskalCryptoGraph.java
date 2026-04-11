@@ -34,6 +34,7 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         buildMstAdjacency();
         precalculateMstLoads();
         fillWeightMatrix();
+        applyFloydWarshall();
     }
 
     private int calculateFriction(Node u, Node v) {

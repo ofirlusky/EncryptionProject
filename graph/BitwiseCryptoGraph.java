@@ -15,6 +15,7 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
         this.boardMask = generateBoardMask();
         fillWeightMatrix();
         FinalWightOfG();
+        applyFloydWarshall();
 
     }
 

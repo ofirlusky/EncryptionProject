@@ -2,7 +2,6 @@ package graph;
 
 import graph.BaseCryptoGraph;
 import utils.Node;
-
 import java.util.*;
 
 public class MaxFlowCryptoGraph extends BaseCryptoGraph {
@@ -10,6 +9,7 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
     public MaxFlowCryptoGraph(Node[] finalBoard) {
         super(finalBoard);
         fillWeightMatrix();
+        applyFloydWarshall();
     }
 
     @Override

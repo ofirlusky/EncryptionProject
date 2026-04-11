@@ -18,6 +18,9 @@ public abstract class BaseCryptoGraph {
     protected static Map<Direction, List<Integer>>[] neighborsByDir;
 
 
+    // הסופי
+    protected int[][] keyMatrix;
+
 
     public BaseCryptoGraph(Node[] finalBoard) {
         this.vertices = finalBoard;
@@ -116,5 +119,50 @@ public abstract class BaseCryptoGraph {
     }
 
 
+    protected void applyFloydWarshall() {
+        int n = vertices.length;
+        keyMatrix = new int[n][n];
+        int INF = 999999;
 
-}
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == j) {
+                    keyMatrix[i][j] = 0;
+                } else if (weightMatrix[i][j] == 0) {
+                    keyMatrix[i][j] = INF;
+                } else {
+                    keyMatrix[i][j] = weightMatrix[i][j];
+                }
+            }
+        }
+
+        for (int k = 0; k < n; k++) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (keyMatrix[i][k] != INF && keyMatrix[k][j] != INF &&
+                            keyMatrix[i][k] + keyMatrix[k][j] < keyMatrix[i][j]) {
+
+                        keyMatrix[i][j] = keyMatrix[i][k] + keyMatrix[k][j];
+                    }
+                }
+            }
+        }
+    }
+
+
+    public void printKeyMatrix() {
+        System.out.println("floyidddddddddddddddddddddddddddd warshelllllllllllllllll");
+        for (int i = 0; i < keyMatrix.length; i++) {
+            for (int j = 0; j < keyMatrix.length; j++) {
+                if (keyMatrix[i][j] >= 999999) {
+                    System.out.print("INF\t");
+                } else {
+                    System.out.print(keyMatrix[i][j] + "\t");
+                }
+            }
+            System.out.println();
+        }
+
+
+
+}   }

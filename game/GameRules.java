@@ -55,11 +55,13 @@ public class GameRules
                             board[w].getCurrentPieceValue() == val) {
 
 
-                            graph.BaseCryptoGraph graph = new graph.KruskalCryptoGraph(board);
-                            graph.printMatrix();
+                        graph.BaseCryptoGraph graph = new graph.KruskalCryptoGraph(board);
+                        graph.printMatrix();
+                        graph.printKeyMatrix();
 
-                        //BaseCryptoGraph graph = new MaxFlowCryptoGraph(board);
-                        //graph.printMatrix();
+                         //BaseCryptoGraph graph = new MaxFlowCryptoGraph(board);
+                         //graph.printMatrix();
+                         //graph.printKeyMatrix();
 
                         //graph.BaseCryptoGraph b = new graph.BitwiseCryptoGraph(board);
                             //b.printMatrix();
