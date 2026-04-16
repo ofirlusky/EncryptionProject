@@ -41,7 +41,6 @@ public abstract class BaseCryptoGraph {
     }
 
 
-
     protected void fillWeightMatrix() {
         int size = vertices.length;
         for (int i = 0; i < size; i++) {
@@ -85,11 +84,6 @@ public abstract class BaseCryptoGraph {
         }
         return su;
     }
-
-
-
-
-
 
 
 

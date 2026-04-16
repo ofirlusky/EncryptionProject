@@ -11,6 +11,8 @@ public class PicariaGame {
 
     public static final int TOTAL_NODES = 13;
 
+    private List<Move> gameHistory;
+
 
     //
     public static final int[][] neighbors =
@@ -35,7 +37,6 @@ public class PicariaGame {
 
 
     // history מבנה נתונים בונה גרף היסטוריית משחק גרף heliro -
-    // לבנות גרף של board ופה עליו פלורייד ווארשל - גרף ממושקל -
 
 
     private Node[] board;
@@ -57,6 +58,7 @@ public class PicariaGame {
         this.currentTurn = PlayerID.PLAYER_ONE;
         this.isGameOver = false;
         this.numberOfpiecesPlaced = 0;
+        this.gameHistory = new ArrayList<>();
 
         buildNeighborsByDir();
     }
@@ -139,6 +141,9 @@ public class PicariaGame {
             }
 
             if (GameRules.isValidMove(selectedNode, clickedNode, neighbors)) {
+
+                recordMove(selectedNode.getIDofNode(), clickedNode.getIDofNode());
+
                 clickedNode.setCurrentPieceValue(selectedNode.getCurrentPieceValue());
                 selectedNode.setCurrentPieceValue(PieceValue.EMPTY);
                 selectedNode = null;
@@ -153,12 +158,15 @@ public class PicariaGame {
         }
     }
 
+
+
+
     private void switchTurn() {
         currentTurn = (currentTurn == PlayerID.PLAYER_ONE) ? PlayerID.PLAYER_TWO : PlayerID.PLAYER_ONE;
     }
 
     private void checkEndGame() {
-        PlayerID winner = GameRules.checkWin(board, neighborsByDir);
+        PlayerID winner = GameRules.checkWin(board, neighborsByDir,gameHistory);
         if (winner != null) {
             isGameOver = true;
         }
@@ -170,6 +178,13 @@ public class PicariaGame {
         return false;
     }
 
+    public void recordMove(int from, int to) {
+        gameHistory.add(new Move(from, to));
+    }
+
+    public List<Move> getGameHistory() {
+        return gameHistory;
+    }
     // Getters
     public Node[] getBoard() { return board; }
     public PlayerID getCurrentTurn() { return currentTurn; }

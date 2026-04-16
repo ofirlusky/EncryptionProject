@@ -1,4 +1,5 @@
 package game;
+import graph.EulerianCryptoGraph;
 
 import graph.BaseCryptoGraph;
 import graph.MaxFlowCryptoGraph;
@@ -38,7 +39,7 @@ public class GameRules
     }
 
 
-    public static PlayerID checkWin(Node[] board, Map<Direction, List<Integer>>[] neighborsByDir) {
+    public static PlayerID checkWin(Node[] board, Map<Direction, List<Integer>>[] neighborsByDir,List<game.Move> gameHistory) {
 
         for (int u = 0; u < board.length; u++) {
             PieceValue val = board[u].getCurrentPieceValue();
@@ -55,9 +56,9 @@ public class GameRules
                             board[w].getCurrentPieceValue() == val) {
 
 
-                        graph.BaseCryptoGraph graph = new graph.KruskalCryptoGraph(board);
-                        graph.printMatrix();
-                        graph.printKeyMatrix();
+                        //graph.BaseCryptoGraph graph = new graph.KruskalCryptoGraph(board);
+                        //graph.printMatrix();
+                        //graph.printKeyMatrix();
 
                          //BaseCryptoGraph graph = new MaxFlowCryptoGraph(board);
                          //graph.printMatrix();
@@ -65,7 +66,13 @@ public class GameRules
 
                         //graph.BaseCryptoGraph b = new graph.BitwiseCryptoGraph(board);
                             //b.printMatrix();
+
+                        EulerianCryptoGraph eulerProcessor = new EulerianCryptoGraph(13, gameHistory);
+
+                        eulerProcessor.printKeyStream();
+
                             return (val == PieceValue.OCCUPIED_P1) ? PlayerID.PLAYER_ONE : PlayerID.PLAYER_TWO;
+
 
                     }
                 }

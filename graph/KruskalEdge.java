@@ -25,8 +25,6 @@ public class KruskalEdge {
         this.load = 0;
     }
 
-
-    // merge sort help this
     public int compareTo(KruskalEdge other) {
         if (this.frictionWeight < other.frictionWeight) return -1;
         if (this.frictionWeight > other.frictionWeight) return 1;
@@ -39,4 +37,6 @@ public class KruskalEdge {
 
         return 0;
     }
+
+
 }
