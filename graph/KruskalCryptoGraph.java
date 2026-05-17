@@ -7,6 +7,10 @@ import utils.UnionFind;
 
 import java.util.*;
 
+// לייעל אלגוריתם
+// לחבר את המפתחות
+// להראות למה זה ייחודי עי
+
 public class KruskalCryptoGraph extends BaseCryptoGraph {
 
 
@@ -36,6 +40,7 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         fillWeightMatrix();
         applyFloydWarshall();
     }
+
 
     private int calculateFriction(Node u, Node v) {
         int statU = StatuseOfTheNode(u);

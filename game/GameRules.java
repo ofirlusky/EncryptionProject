@@ -56,22 +56,23 @@ public class GameRules
                             board[w].getCurrentPieceValue() == val) {
 
 
-                        //graph.BaseCryptoGraph graph = new graph.KruskalCryptoGraph(board);
-                        //graph.printMatrix();
-                        //graph.printKeyMatrix();
+                        System.out.println("kruskal");
+                        graph.BaseCryptoGraph graph1 = new graph.KruskalCryptoGraph(board);
+                        graph1.printKeyMatrix();
 
-                         //BaseCryptoGraph graph = new MaxFlowCryptoGraph(board);
-                         //graph.printMatrix();
-                         //graph.printKeyMatrix();
+                        System.out.println("max flow");
+                        BaseCryptoGraph graph2 = new MaxFlowCryptoGraph(board);
+                        graph2.printKeyMatrix();
 
-                        //graph.BaseCryptoGraph b = new graph.BitwiseCryptoGraph(board);
-                            //b.printMatrix();
+                        System.out.println("dijekstra");
+                        graph.BaseCryptoGraph b = new graph.BitwiseCryptoGraph(board);
+                        b.printKeyMatrix();
 
+                        System.out.println("euler");
                         EulerianCryptoGraph eulerProcessor = new EulerianCryptoGraph(13, gameHistory);
-
                         eulerProcessor.printKeyStream();
 
-                            return (val == PieceValue.OCCUPIED_P1) ? PlayerID.PLAYER_ONE : PlayerID.PLAYER_TWO;
+                        return (val == PieceValue.OCCUPIED_P1) ? PlayerID.PLAYER_ONE : PlayerID.PLAYER_TWO;
 
 
                     }

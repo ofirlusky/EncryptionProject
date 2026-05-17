@@ -19,6 +19,9 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
 
     }
 
+
+
+
     private int generateBoardMask() {
         int mask = 0;
         for (int i = 0; i < vertices.length; i++) {
@@ -69,6 +72,7 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
             }
         }
     }
+
 
     public int FindLargestNode() {
         int indexOfMaxNode = 0;

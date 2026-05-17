@@ -15,6 +15,7 @@ public class EulerianCryptoGraph {
 
     private List<Integer> keyStream;
 
+
     public EulerianCryptoGraph(int totalNodes, List<Move> gameHistory) {
         this.numNodes = totalNodes;
 

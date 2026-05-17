@@ -158,5 +158,10 @@ public abstract class BaseCryptoGraph {
         }
 
 
+    }
 
-}   }
+    // פונקציה שמאפשרת למחלקות אחרות למשוך את מטריצת ההצפנה הסופית
+    public int[][] getKeyMatrix() {
+        return this.keyMatrix;
+    }
+}
