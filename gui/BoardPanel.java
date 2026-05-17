@@ -11,13 +11,17 @@ import java.awt.*;
 public class BoardPanel extends JPanel {
 
     private PicariaGame game;
-
     private JLabel statusLabel;
 
-    public BoardPanel(PicariaGame game,JLabel statusLabel) {
+    // כפתור שמופיע רק כשיש מנצח
+    private JButton continueButton;
+    private boolean cryptoLaunched = false;
+
+    public BoardPanel(PicariaGame game, JLabel statusLabel) {
         this.game = game;
         this.statusLabel = statusLabel;
         setBackground(Color.black);
+        setLayout(null);   // מיקום ידני לכפתור
 
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -25,11 +29,22 @@ public class BoardPanel extends JPanel {
                 handleMouseClick(e.getX(), e.getY());
             }
         });
+
+        // כפתור "המשך לקריפטו" — מוסתר עד ניצחון
+        continueButton = new JButton("CONTINUE TO CRYPTO →");
+        continueButton.setFont(new Font("Arial", Font.BOLD, 18));
+        continueButton.setBackground(new Color(46, 160, 67));
+        continueButton.setForeground(Color.BLACK);
+        continueButton.setFocusPainted(false);
+        continueButton.setBounds(160, 600, 300, 50);
+        continueButton.setVisible(false);
+        continueButton.addActionListener(e -> launchCrypto());
+        add(continueButton);
     }
 
-
-
     private void handleMouseClick(int mouseX, int mouseY) {
+        if (game.isGameOver()) return;   // אחרי ניצחון לא מקבלים קליקים
+
         int padding = 100;
         int scale = 100;
         for (int i = 0; i < PicariaGame.TOTAL_NODES; i++) {
@@ -48,6 +63,24 @@ public class BoardPanel extends JPanel {
         }
     }
 
+    /**
+     * סוגר את חלון המשחק ופותח את חלון הקריפטו.
+     */
+    private void launchCrypto() {
+        if (cryptoLaunched) return;
+        cryptoLaunched = true;
+
+        // מאתר את חלון המשחק (ה-JFrame ההורה) וסוגר אותו
+        Window gameWindow = SwingUtilities.getWindowAncestor(this);
+
+        // פותח את חלון הקריפטו עם נתוני המשחק
+        new CryptoResultGUI(game.getBoard(), game.getGameHistory());
+
+        if (gameWindow != null) {
+            gameWindow.dispose();   // סוגר את חלון המשחק
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -61,7 +94,6 @@ public class BoardPanel extends JPanel {
 
         g.setColor(Color.WHITE);
         for (int i = 0; i < PicariaGame.TOTAL_NODES; i++) {
-
             int x1 = padding + (PicariaGame.COORDS[i][0] * scale);
             int y1 = padding + (PicariaGame.COORDS[i][1] * scale);
 
@@ -82,8 +114,6 @@ public class BoardPanel extends JPanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setColor(Color.YELLOW);
                 g2d.setStroke(new BasicStroke(4));
-
-
                 g2d.drawOval(screenX - nodeOffset, screenY - nodeOffset, nodeSize, nodeSize);
                 g2d.setStroke(new BasicStroke(1));
             }
@@ -92,8 +122,7 @@ public class BoardPanel extends JPanel {
             if (status == PieceValue.OCCUPIED_P1) {
                 g.setColor(Color.BLUE);
                 g.fillOval(screenX - pieceOffset, screenY - pieceOffset, pieceSize, pieceSize);
-            }
-            else if (status == PieceValue.OCCUPIED_P2) {
+            } else if (status == PieceValue.OCCUPIED_P2) {
                 g.setColor(Color.RED);
                 g.fillOval(screenX - pieceOffset, screenY - pieceOffset, pieceSize, pieceSize);
             }
@@ -102,12 +131,19 @@ public class BoardPanel extends JPanel {
 
     private void updateStatusMessage() {
         if (game.isGameOver()) {
-            String winner = (game.getCurrentTurn() == PlayerID.PLAYER_ONE) ? "game.Player 1 (Blue)" : "game.Player 2 (Red)";
-            statusLabel.setText("game over" + winner + " win");
+            String winner = (game.getCurrentTurn() == PlayerID.PLAYER_ONE)
+                    ? "Player 1 (Blue)" : "Player 2 (Red)";
+            statusLabel.setText("GAME OVER - " + winner + " wins!");
             statusLabel.setForeground(Color.YELLOW);
+
+            // מציג את כפתור ההמשך לקריפטו
+            continueButton.setVisible(true);
+            repaint();
             return;
         }
-        String playerColor = (game.getCurrentTurn() == PlayerID.PLAYER_ONE) ? "game.Player 1 (Blue)" : "game.Player 2 (Red)";
+
+        String playerColor = (game.getCurrentTurn() == PlayerID.PLAYER_ONE)
+                ? "Player 1 (Blue)" : "Player 2 (Red)";
         String phaseText;
         if (game.getNumberOfpiecesPlaced() < 6) {
             phaseText = "Drop Phase (Place a piece)";

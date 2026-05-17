@@ -1,27 +1,23 @@
 package game;
 
-import crypto.AESFileEncryptor;
-import crypto.KeyGenerator;
-import graph.EulerianCryptoGraph;
-import graph.BaseCryptoGraph;
-import graph.MaxFlowCryptoGraph;
 import utils.Node;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * GameRules — חוקי המשחק וזיהוי ניצחון.
+ *
+ * שים לב: ה-crypto pipeline (4 אלגוריתמים + מפתח + AES)
+ * כבר לא רץ כאן. הוא עבר ל-CryptoResultGUI שנפתח
+ * אחרי שהמשתמש לוחץ "המשך לקריפטו" בחלון המשחק.
+ *
+ * checkWin רק מזהה ניצחון ומחזיר את המנצח —
+ * ה-GUI אחראי על הפעלת הקריפטו.
+ */
 public class GameRules {
 
-    // שמות קבצי ברירת-מחדל — שנה לפי הצורך
-    private static final String INPUT_FILE     = "secret.txt";
-    private static final String ENCRYPTED_FILE = "secret_encrypted.bin";
-    private static final String DECRYPTED_FILE = "secret_decrypted.txt";
-
     private GameRules() {}
-
-    // =========================================================
-    // Basic rules
-    // =========================================================
 
     public static boolean isPeaceFree(Node node) {
         return !(node == null || node.getCurrentPieceValue() != PieceValue.EMPTY);
@@ -36,10 +32,13 @@ public class GameRules {
         return false;
     }
 
-    // =========================================================
-    // Win detection + full crypto pipeline
-    // =========================================================
-
+    /**
+     * מזהה ניצחון: 3 כלים של אותו שחקן באותו כיוון.
+     * מחזיר את המנצח, או null אם אין מנצח עדיין.
+     *
+     * הערה: gameHistory מתקבל לשם תאימות לחתימה הקיימת,
+     * אך הקריפטו עצמו מורץ ע"י ה-GUI.
+     */
     public static PlayerID checkWin(Node[] board,
                                     Map<Direction, List<Integer>>[] neighborsByDir,
                                     List<game.Move> gameHistory) {
@@ -58,8 +57,6 @@ public class GameRules {
                     if (board[v].getCurrentPieceValue() == val &&
                             board[w].getCurrentPieceValue() == val) {
 
-                        runFullCryptoPipeline(board, gameHistory);
-
                         return (val == PieceValue.OCCUPIED_P1)
                                 ? PlayerID.PLAYER_ONE
                                 : PlayerID.PLAYER_TWO;
@@ -68,50 +65,5 @@ public class GameRules {
             }
         }
         return null;
-    }
-
-    // =========================================================
-    // Full pipeline: 4 algorithms → KeyGenerator → AES file encryption
-    // =========================================================
-
-    private static void runFullCryptoPipeline(Node[] board, List<Move> gameHistory) {
-
-        // ── שלב 1: הרצת 4 האלגוריתמים ───────────────────────────────────
-
-        System.out.println("\n[1/4] Running Kruskal (MST + Floyd-Warshall)...");
-        BaseCryptoGraph kruskal = new graph.KruskalCryptoGraph(board);
-        kruskal.printKeyMatrix();
-
-        System.out.println("\n[2/4] Running MaxFlow (Edmonds-Karp + Floyd-Warshall)...");
-        BaseCryptoGraph maxFlow = new MaxFlowCryptoGraph(board);
-        maxFlow.printKeyMatrix();
-
-        System.out.println("\n[3/4] Running Bitwise (XOR mask + Dijkstra + Floyd-Warshall)...");
-        BaseCryptoGraph bitwise = new graph.BitwiseCryptoGraph(board);
-        bitwise.printKeyMatrix();
-
-        System.out.println("\n[4/4] Running Eulerian path (Hierholzer)...");
-        EulerianCryptoGraph euler = new EulerianCryptoGraph(13, gameHistory);
-        euler.printKeyStream();
-
-        // ── שלב 2: שילוב התוצאות למפתח 256-ביט ─────────────────────────
-
-        System.out.println("\n>>> Combining all outputs into 256-bit encryption key...");
-
-        byte[] finalKey = KeyGenerator.generateKey(
-                kruskal.getKeyMatrix(),
-                maxFlow.getKeyMatrix(),
-                bitwise.getKeyMatrix(),
-                euler.getKeyStream()
-        );
-
-        KeyGenerator.printKey(finalKey);
-
-        // ── שלב 3: הצפנת קובץ ב-AES-128 CBC ────────────────────────────
-
-        System.out.println("\n>>> Launching AES-128 CBC file encryption...");
-        AESFileEncryptor encryptor = new AESFileEncryptor(finalKey);
-        encryptor.encryptFile(INPUT_FILE, ENCRYPTED_FILE);
-        encryptor.decryptFile(ENCRYPTED_FILE, DECRYPTED_FILE);
     }
 }

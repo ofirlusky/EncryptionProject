@@ -7,22 +7,22 @@ import utils.UnionFind;
 
 import java.util.*;
 
-// לייעל אלגוריתם
-// לחבר את המפתחות
-// להראות למה זה ייחודי עי
 
 public class KruskalCryptoGraph extends BaseCryptoGraph {
 
 
-    //  אני מאחסן פה את כל האלה עם משקלים רגילים באופן זמני !!!
+    //  משמש לאחסון זמני של כל המשקלים בהתאם למצב המשחק
     private KruskalEdge[] allFrictionEdges;
+    // מספר הקשתות שהוכנסו
     private int edgeCount;
-    // פה מאחסן את כל האלה ששייכים לעץ של קרוסקל עם load
+
+    // אחסון כל הקשתות שממנן מורכב העץ פורש מינימלי
     private KruskalEdge[] mstEdges;
+    // מספר קשתות ששייכות לעץ קורסקל
     private int mstCount;
 
 
-    // רק לגבי עץ פורש מינימלי  1 יש קשת , 0 איו
+    // נועדה לאופטמיזציה בקוד , יש בה 0\1 ו 1 מייצג אם יש קשת בתוך העץ פורש
     private int[][] mstAdjacency;
 
     public KruskalCryptoGraph(Node[] board) {
@@ -42,6 +42,8 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
     }
 
 
+
+    // חישוב התחלתי-  משקלים לגרף ממושקל בהתאם לשחקנים על המשחק
     private int calculateFriction(Node u, Node v) {
         int statU = StatuseOfTheNode(u);
         int statV = StatuseOfTheNode(v);
@@ -72,6 +74,8 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         }
     }
 
+
+    // מתבצע קורסקל על גבי הגרף עם המשקלים ההתחלתיים שהבאתי
     private void runKruskal() {
         int n = vertices.length;
         this.mstEdges = new KruskalEdge[n - 1];
@@ -98,7 +102,7 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         }
     }
 
-    // זה כאילו רק בשביך שיהיה יותר מהיא לבדוק אם יש קשת
+    // ממלא את mstAjacency בהתאם אם יש קשת -1 ואם אין 0 ככה ניתן לבדוק ב 0(1) אם יש קשת
     private void buildMstAdjacency() {
         int n = vertices.length;
         this.mstAdjacency = new int[n][n];
@@ -113,6 +117,10 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         }
     }
 
+
+    // מחשבת עבור כל צומת בעץ את הload שלה
+    // Edge Betweenness  - load
+    // עבור כל צומת בקרוסקל יש קשת שנקראת גשר שאם נפרק אותה הגרף יתפצל לשני חלקים , פונקציה זו מחשבת את מספר הצמתים בשני הצדדים וכופלת אותם
     private void precalculateMstLoads() {
         int n = vertices.length;
         for (int i = 0; i < mstCount; i++) {
@@ -123,9 +131,8 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
             e.load = x * y;
         }
     }
-
-
-    // עוברת רק על העץ MST שלי שיצרתי וסופרת כמה קודקודים לפניה
+    // הפונקציה מחזירה בדיוק כמה קודקודים יש בצד של u, במנותק מהצד של v
+    // ערך זה מוכנס ל load
     private int countSubtreeSize(int u, int v, int n) {
         int size = 1;
 
@@ -138,6 +145,10 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         return size;
     }
 
+
+
+    // ממלא את המשקלים הסופים של פלוייד ווארשל , אם יש קשת בין צמתים בעץ קרוסקל משקל הקשת שתשלח לפלוייד ווארשל היא ה load
+    // אם בין צמתים אין קשת בעץ הקרוסקל משקל הקשת יהיה סכון המשקלים בדרך לקרוסקל להגיע לצומת
     @Override
     protected int calculateEdgeWeight(Node u, Node v) {
         int uId = u.getIDofNode();
@@ -163,6 +174,8 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
         return INF;
     }
 
+
+    // אלגוריתם DFS שבעצם עובר על עץ הקרוסקל וסוכם את המשקלים מהצומת הנוכחית עד לצומת היעד (צמתים אלו אין להם קשת בקוסקל בעץ)
     private int getPathWeightInTree(int current, int target, int parent, int currentSum) {
         if (current == target) {
             return currentSum;

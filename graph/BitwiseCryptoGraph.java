@@ -6,8 +6,8 @@ import utils.Node;
 public class BitwiseCryptoGraph extends BaseCryptoGraph {
 
 
-    //  תכונה ייחודית למחלקה הזאת ברור שזה בנוסף לתכונות שהוא מקבל מאבא שלו
-
+    //  תכונה ייחודית למחלקה הזאת , מוכנס לה ערך שמייצג את כל הגרף
+    // מספיק ששחקן משנה דבר הכי קטן במשחק כל הboard mask משתנה
     private int boardMask;
 
     public BitwiseCryptoGraph(Node[] finalBoard) {
@@ -22,6 +22,7 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
 
 
 
+    // פונקציה זו מכניסה לBoardmask את מצב הגרף , בהתאם למה שממוקם בגרף 0\1\2 הופכת לבינארי ועושה shift בשביל שכל המצבים יכנסו
     private int generateBoardMask() {
         int mask = 0;
         for (int i = 0; i < vertices.length; i++) {
@@ -33,6 +34,8 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
     }
 
 
+
+    // מחשבת משקלים לגרף בעזרת board mask יחד עם פעולות בינארית והכפלה במספרים ראשונים
     @Override
     protected int calculateEdgeWeight(Node u, Node v) {
         int uId = u.getIDofNode();
@@ -45,6 +48,8 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
         return weight;
     }
 
+
+
     @Override
     public  void printMatrix() {
         System.out.println("this is the pelet of Bitwise G");
@@ -54,6 +59,8 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
 
 
 
+    // מחשב משקל סופי במטריצה שפלוייד ווארשל יעבור עליו
+    // שילוב של המשקל המקורי פלוס הערכים שדייקסטרה החזיר
     public void FinalWightOfG() {
 
         int indexOfSourceNode = FindLargestNode();
@@ -74,6 +81,8 @@ public class BitwiseCryptoGraph extends BaseCryptoGraph {
     }
 
 
+    // מחזיר צומת מקסימלית לביצוע דייקסטרה ממנה
+    // צומת מקסימלית מוגדרת כ- מי הצומת עם המשקל המקסימלי של קשתות שמחוברות אליה
     public int FindLargestNode() {
         int indexOfMaxNode = 0;
         int maximumSum = -1;
