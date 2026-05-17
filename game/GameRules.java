@@ -1,5 +1,6 @@
 package game;
 
+import crypto.AESFileEncryptor;
 import crypto.KeyGenerator;
 import graph.EulerianCryptoGraph;
 import graph.BaseCryptoGraph;
@@ -11,28 +12,33 @@ import java.util.Map;
 
 public class GameRules {
 
-    private GameRules() {
-    }
+    // שמות קבצי ברירת-מחדל — שנה לפי הצורך
+    private static final String INPUT_FILE     = "secret.txt";
+    private static final String ENCRYPTED_FILE = "secret_encrypted.bin";
+    private static final String DECRYPTED_FILE = "secret_decrypted.txt";
+
+    private GameRules() {}
+
+    // =========================================================
+    // Basic rules
+    // =========================================================
 
     public static boolean isPeaceFree(Node node) {
         return !(node == null || node.getCurrentPieceValue() != PieceValue.EMPTY);
     }
 
     public static boolean isValidMove(Node start, Node end, int[][] neighbors) {
-        if (!isPeaceFree(end)) {
-            return false;
-        }
-
+        if (!isPeaceFree(end)) return false;
         int startID = start.getIDofNode();
         int endID   = end.getIDofNode();
-
-        for (int i = 0; i < neighbors[startID].length; i++) {
-            if (neighbors[startID][i] == endID)
-                return true;
-        }
+        for (int i = 0; i < neighbors[startID].length; i++)
+            if (neighbors[startID][i] == endID) return true;
         return false;
     }
 
+    // =========================================================
+    // Win detection + full crypto pipeline
+    // =========================================================
 
     public static PlayerID checkWin(Node[] board,
                                     Map<Direction, List<Integer>>[] neighborsByDir,
@@ -52,34 +58,7 @@ public class GameRules {
                     if (board[v].getCurrentPieceValue() == val &&
                             board[w].getCurrentPieceValue() == val) {
 
-                        // ── הרצת 4 האלגוריתמים ───────────────────────────────
-                        System.out.println("\n[1/4] Running Kruskal...");
-                        graph.BaseCryptoGraph kruskal = new graph.KruskalCryptoGraph(board);
-                        kruskal.printKeyMatrix();
-
-                        System.out.println("\n[2/4] Running MaxFlow (Edmonds-Karp)...");
-                        BaseCryptoGraph maxFlow = new MaxFlowCryptoGraph(board);
-                        maxFlow.printKeyMatrix();
-
-                        System.out.println("\n[3/4] Running Bitwise (Dijkstra-enhanced)...");
-                        graph.BaseCryptoGraph bitwise = new graph.BitwiseCryptoGraph(board);
-                        bitwise.printKeyMatrix();
-
-                        System.out.println("\n[4/4] Running Eulerian path (Hierholzer)...");
-                        EulerianCryptoGraph euler = new EulerianCryptoGraph(13, gameHistory);
-                        euler.printKeyStream();
-
-                        // ── יצירת מפתח ההצפנה המשולב ────────────────────────
-                        System.out.println("\n>>> Combining all outputs into final encryption key...");
-
-                        byte[] finalKey = KeyGenerator.generateKey(
-                                kruskal.getKeyMatrix(),
-                                maxFlow.getKeyMatrix(),
-                                bitwise.getKeyMatrix(),
-                                euler.getKeyStream()
-                        );
-
-                        KeyGenerator.printKey(finalKey);
+                        runFullCryptoPipeline(board, gameHistory);
 
                         return (val == PieceValue.OCCUPIED_P1)
                                 ? PlayerID.PLAYER_ONE
@@ -89,5 +68,50 @@ public class GameRules {
             }
         }
         return null;
+    }
+
+    // =========================================================
+    // Full pipeline: 4 algorithms → KeyGenerator → AES file encryption
+    // =========================================================
+
+    private static void runFullCryptoPipeline(Node[] board, List<Move> gameHistory) {
+
+        // ── שלב 1: הרצת 4 האלגוריתמים ───────────────────────────────────
+
+        System.out.println("\n[1/4] Running Kruskal (MST + Floyd-Warshall)...");
+        BaseCryptoGraph kruskal = new graph.KruskalCryptoGraph(board);
+        kruskal.printKeyMatrix();
+
+        System.out.println("\n[2/4] Running MaxFlow (Edmonds-Karp + Floyd-Warshall)...");
+        BaseCryptoGraph maxFlow = new MaxFlowCryptoGraph(board);
+        maxFlow.printKeyMatrix();
+
+        System.out.println("\n[3/4] Running Bitwise (XOR mask + Dijkstra + Floyd-Warshall)...");
+        BaseCryptoGraph bitwise = new graph.BitwiseCryptoGraph(board);
+        bitwise.printKeyMatrix();
+
+        System.out.println("\n[4/4] Running Eulerian path (Hierholzer)...");
+        EulerianCryptoGraph euler = new EulerianCryptoGraph(13, gameHistory);
+        euler.printKeyStream();
+
+        // ── שלב 2: שילוב התוצאות למפתח 256-ביט ─────────────────────────
+
+        System.out.println("\n>>> Combining all outputs into 256-bit encryption key...");
+
+        byte[] finalKey = KeyGenerator.generateKey(
+                kruskal.getKeyMatrix(),
+                maxFlow.getKeyMatrix(),
+                bitwise.getKeyMatrix(),
+                euler.getKeyStream()
+        );
+
+        KeyGenerator.printKey(finalKey);
+
+        // ── שלב 3: הצפנת קובץ ב-AES-128 CBC ────────────────────────────
+
+        System.out.println("\n>>> Launching AES-128 CBC file encryption...");
+        AESFileEncryptor encryptor = new AESFileEncryptor(finalKey);
+        encryptor.encryptFile(INPUT_FILE, ENCRYPTED_FILE);
+        encryptor.decryptFile(ENCRYPTED_FILE, DECRYPTED_FILE);
     }
 }
