@@ -19,7 +19,6 @@ public class EulerianCryptoGraph {
     public EulerianCryptoGraph(int totalNodes, List<Move> gameHistory) {
         this.numNodes = totalNodes;
 
-        // 1. אתחול המבנה
         adjList = new ArrayList[numNodes];
         for (int i = 0; i < numNodes; i++) {
             adjList[i] = new ArrayList<>();
@@ -56,9 +55,8 @@ public class EulerianCryptoGraph {
         }
     }
 
-    // פה אני הופך את הגרף לאוילרי
     public void balanceGraph() {
-        int[] inDegree = new int[numNodes];
+        int[] inDegree  = new int[numNodes];
         int[] outDegree = new int[numNodes];
 
         for (int i = 0; i < numNodes; i++) {
@@ -68,9 +66,8 @@ public class EulerianCryptoGraph {
             }
         }
 
-
         List<Integer> needsOut = new ArrayList<>();
-        List<Integer> needsIn = new ArrayList<>();
+        List<Integer> needsIn  = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
             int balance = inDegree[i] - outDegree[i];
@@ -82,18 +79,17 @@ public class EulerianCryptoGraph {
         }
 
         for (int i = 0; i < needsOut.size(); i++) {
-            int from = needsOut.get(i);
-            int to = needsIn.get(i);
-
-            adjList[from].add(to);
+            adjList[needsOut.get(i)].add(needsIn.get(i));
         }
     }
 
-
     public List<Integer> runHierholzer(int startNode) {
 
+
         for (int i = 0; i < numNodes; i++) {
-            bubbleSort(adjList[i]);
+            if (adjList[i].size() > 1) {
+                Sorter.mergeSortList(adjList[i], 0, adjList[i].size() - 1);
+            }
         }
 
         List<Integer>[] tempAdj = new ArrayList[numNodes];
@@ -102,7 +98,7 @@ public class EulerianCryptoGraph {
         }
 
         Stack<Integer> currPath = new Stack<>();
-        List<Integer> circuit = new ArrayList<>();
+        List<Integer>  circuit  = new ArrayList<>();
         currPath.push(startNode);
 
         while (!currPath.isEmpty()) {
@@ -128,8 +124,8 @@ public class EulerianCryptoGraph {
         System.out.println("   GENERATED EULERIAN KEYSTREAM (Encryption Ready)   ");
         System.out.println("***************************************************");
         System.out.println("Start Node: " + (keyStream != null && !keyStream.isEmpty() ? keyStream.get(0) : "N/A"));
-        System.out.println("Length: " + (keyStream != null ? keyStream.size() : 0) + " values");
-        System.out.println("Key: " + keyStream);
+        System.out.println("Length: "     + (keyStream != null ? keyStream.size() : 0) + " values");
+        System.out.println("Key: "        + keyStream);
         System.out.println("***************************************************\n");
     }
 
@@ -139,20 +135,5 @@ public class EulerianCryptoGraph {
             reversed.add(list.get(i));
         }
         return reversed;
-    }
-
-    private void bubbleSort(List<Integer> list) {
-        if (list == null || list.size() < 2) return;
-
-        int n = list.size();
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                if (list.get(j) > list.get(j + 1)) {
-                    int temp = list.get(j);
-                    list.set(j, list.get(j + 1));
-                    list.set(j + 1, temp);
-                }
-            }
-        }
     }
 }

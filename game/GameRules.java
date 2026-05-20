@@ -5,16 +5,7 @@ import utils.Node;
 import java.util.List;
 import java.util.Map;
 
-/**
- * GameRules — חוקי המשחק וזיהוי ניצחון.
- *
- * שים לב: ה-crypto pipeline (4 אלגוריתמים + מפתח + AES)
- * כבר לא רץ כאן. הוא עבר ל-CryptoResultGUI שנפתח
- * אחרי שהמשתמש לוחץ "המשך לקריפטו" בחלון המשחק.
- *
- * checkWin רק מזהה ניצחון ומחזיר את המנצח —
- * ה-GUI אחראי על הפעלת הקריפטו.
- */
+
 public class GameRules {
 
     private GameRules() {}
@@ -32,13 +23,7 @@ public class GameRules {
         return false;
     }
 
-    /**
-     * מזהה ניצחון: 3 כלים של אותו שחקן באותו כיוון.
-     * מחזיר את המנצח, או null אם אין מנצח עדיין.
-     *
-     * הערה: gameHistory מתקבל לשם תאימות לחתימה הקיימת,
-     * אך הקריפטו עצמו מורץ ע"י ה-GUI.
-     */
+
     public static PlayerID checkWin(Node[] board,
                                     Map<Direction, List<Integer>>[] neighborsByDir,
                                     List<game.Move> gameHistory) {

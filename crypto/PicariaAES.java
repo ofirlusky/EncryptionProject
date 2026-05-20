@@ -1,21 +1,9 @@
 package crypto;
 
-/**
- * PicariaAES — AES-128 מלא (10 סיבובים), עצמאי לחלוטין ב-crypto package.
- *
- * מותאם מ-StrongAES של הפרויקט — לוגיקת SubBytes / ShiftRows /
- * MixColumns / AddRoundKey זהה ותקינה. ההבדל:
- *   StrongAES  → מצפה ל-String בינארי של 1408 תווים (מפתח מורחב מראש)
- *   PicariaAES → מקבל byte[] מ-KeyGenerator ועושה Key Schedule פנימי
- *
- * ממשק ציבורי:
- *   encryptBlock(byte[16])  → byte[16]
- *   decryptBlock(byte[16])  → byte[16]
- *   printRoundKeys()
- */
+
 public class PicariaAES {
 
-    // ── S-Box ─────────────────────────────────────────────────────────────
+
     private static final int[] SBOX = {
             0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
             0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
@@ -35,7 +23,7 @@ public class PicariaAES {
             0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16
     };
 
-    // ── Inverse S-Box ─────────────────────────────────────────────────────
+
     private static final int[] RSBOX = {
             0x52,0x09,0x6a,0xd5,0x30,0x36,0xa5,0x38,0xbf,0x40,0xa3,0x9e,0x81,0xf3,0xd7,0xfb,
             0x7c,0xe3,0x39,0x82,0x9b,0x2f,0xff,0x87,0x34,0x8e,0x43,0x44,0xc4,0xde,0xe9,0xcb,
@@ -55,7 +43,7 @@ public class PicariaAES {
             0x17,0x2b,0x04,0x7e,0xba,0x77,0xd6,0x26,0xe1,0x69,0x14,0x63,0x55,0x21,0x0c,0x7d
     };
 
-    // קבועי סיבוב (Rcon) לתזמון המפתח — אחד לכל סיבוב 1..10
+    // קבועי סיבוב (Rcon) לתזמון המפתח - אחד לכל סיבוב 1..10
     private static final int[] RCON = {
             0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36
     };
@@ -66,24 +54,15 @@ public class PicariaAES {
     // 11 מפתחות סיבוב [round][row][col] — עמודה-ראשית כמו מצב AES
     private final byte[][][] roundKeys;
 
-    // =========================================================
-    // Constructor
-    // =========================================================
 
-    /**
-     * @param key  byte[] מ-KeyGenerator (32 בתים).
-     *             האלגוריתם משתמש ב-16 הבתים הראשונים (AES-128).
-     */
+
     public PicariaAES(byte[] key) {
         byte[] key128 = new byte[BLOCK_SIZE];
         System.arraycopy(key, 0, key128, 0, Math.min(key.length, BLOCK_SIZE));
         this.roundKeys = expandKey(key128);
     }
 
-    // =========================================================
-    // Key Schedule — AES-128
-    // =========================================================
-
+    // חשוב לי לציין -
     /**
      * מרחיב מפתח של 16 בתים ל-11 מפתחות סיבוב.
      * לוגיקה: 44 words (int), כל 4 words = מפתח סיבוב אחד.
@@ -111,7 +90,7 @@ public class PicariaAES {
             W[i] = W[i - 4] ^ temp;
         }
 
-        // ארגון ל-11 מטריצות 4×4 (עמודה-ראשית)
+
         byte[][][] rk = new byte[ROUNDS + 1][4][4];
         for (int r = 0; r <= ROUNDS; r++) {
             for (int c = 0; c < 4; c++) {
@@ -136,16 +115,7 @@ public class PicariaAES {
                 SBOX[ w        & 0xFF];
     }
 
-    // =========================================================
-    // Encryption — 10 סיבובים
-    // =========================================================
 
-    /**
-     * מצפין בלוק של 16 בתים.
-     * מבנה:  AddRoundKey(0)
-     *        × 9 { SubBytes → ShiftRows → MixColumns → AddRoundKey(r) }
-     *        SubBytes → ShiftRows → AddRoundKey(10)
-     */
     public byte[] encryptBlock(byte[] input) {
         byte[][] state = toState(input);
 
@@ -165,16 +135,7 @@ public class PicariaAES {
         return fromState(state);
     }
 
-    // =========================================================
-    // Decryption — 10 סיבובים הפוכים
-    // =========================================================
 
-    /**
-     * מפענח בלוק של 16 בתים.
-     * מבנה:  AddRoundKey(10)
-     *        × 9 { InvShiftRows → InvSubBytes → AddRoundKey(r) → InvMixColumns }
-     *        InvShiftRows → InvSubBytes → AddRoundKey(0)
-     */
     public byte[] decryptBlock(byte[] input) {
         byte[][] state = toState(input);
 
@@ -194,9 +155,8 @@ public class PicariaAES {
         return fromState(state);
     }
 
-    // =========================================================
+
     // AES Steps
-    // =========================================================
 
     private void subBytes(byte[][] s) {
         for (int r = 0; r < 4; r++)
@@ -227,11 +187,7 @@ public class PicariaAES {
         }
     }
 
-    // מטריצת MixColumns ב-GF(2^8):
-    // [2 3 1 1]
-    // [1 2 3 1]
-    // [1 1 2 3]
-    // [3 1 1 2]
+
     private void mixColumns(byte[][] s) {
         for (int c = 0; c < 4; c++) {
             byte s0 = s[0][c], s1 = s[1][c], s2 = s[2][c], s3 = s[3][c];
@@ -242,11 +198,7 @@ public class PicariaAES {
         }
     }
 
-    // מטריצת InvMixColumns ב-GF(2^8):
-    // [0e 0b 0d 09]
-    // [09 0e 0b 0d]
-    // [0d 09 0e 0b]
-    // [0b 0d 09 0e]
+
     private void invMixColumns(byte[][] s) {
         for (int c = 0; c < 4; c++) {
             byte s0 = s[0][c], s1 = s[1][c], s2 = s[2][c], s3 = s[3][c];
@@ -263,15 +215,7 @@ public class PicariaAES {
                 s[r][c] ^= rk[r][c];
     }
 
-    // =========================================================
-    // GF(2^8) — כפל בשדה גלואה
-    // =========================================================
 
-    /**
-     * כפל ב-GF(2^8) עם הפולינום הבלתי-פריק 0x11b (x^8+x^4+x^3+x+1).
-     * @param a  בית ראשון
-     * @param b  מכפיל (int, תמיד ≤ 0x0e בשימוש של AES)
-     */
     private byte gm(byte a, int b) {
         byte p = 0;
         for (int i = 0; i < 8; i++) {
@@ -284,11 +228,7 @@ public class PicariaAES {
         return p;
     }
 
-    // =========================================================
-    // State ↔ Bytes — עמודה-ראשית (Column-Major)
-    // =========================================================
 
-    // state[row][col] = input[col*4 + row]
     private byte[][] toState(byte[] in) {
         byte[][] s = new byte[4][4];
         for (int c = 0; c < 4; c++)
@@ -305,9 +245,6 @@ public class PicariaAES {
         return out;
     }
 
-    // =========================================================
-    // Print Helpers
-    // =========================================================
 
     public void printRoundKeys() {
         System.out.println("\n  === AES-128 Key Schedule (11 Round Keys) ===");

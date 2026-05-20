@@ -5,60 +5,31 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-/**
- * AESFileEncryptor — מצפין ומפענח קבצים באמצעות PicariaAES.
- *
- * מצב הפעולה: AES-128 CBC + PKCS7 padding
- *
- * מבנה קובץ מוצפן:
- *   [16 bytes  IV      ]
- *   [N × 16   ciphertext blocks]
- *
- * CBC (Cipher Block Chaining):
- *   encrypt: xor(plainBlock, prevCipher) → AES_encrypt → cipherBlock
- *   decrypt: AES_decrypt(cipherBlock) → xor(result, prevCipher) → plainBlock
- *
- * ה-IV נגזר מהמפתח עצמו (bytes 0-15 XOR bytes 16-31) כך שאין צורך
- * בהגרלה חיצונית — אותו מפתח תמיד מייצר אותו IV.
- */
+
 public class AESFileEncryptor {
 
     private static final int BLOCK_SIZE      = 16;
-    private static final int VERBOSE_BLOCKS  = 3;   // כמה בלוקים להדפיס בפירוט
+    private static final int VERBOSE_BLOCKS  = 3;
 
     private final PicariaAES aes;
     private final byte[]     iv;
 
-    // =========================================================
-    // Constructor
-    // =========================================================
 
-    /**
-     * @param key  byte[32] מ-KeyGenerator.
-     *             16 bytes ראשונים → AES-128 key
-     *             IV נגזר: key[0..15] XOR key[16..31]
-     */
+
+
     public AESFileEncryptor(byte[] key) {
         this.aes = new PicariaAES(key);
 
         this.iv = new byte[BLOCK_SIZE];
         for (int i = 0; i < BLOCK_SIZE; i++) {
-            // XOR בין שני החצאים של המפתח → IV דטרמיניסטי
+
             iv[i] = (byte)(key[i] ^ key[i + BLOCK_SIZE]);
         }
     }
 
-    // =========================================================
-    // Encryption
-    // =========================================================
 
-    /**
-     * מצפין קובץ.
-     * אם הקובץ לא קיים — יוצר קובץ הדגמה ומצפין אותו.
-     *
-     * @param inputPath   נתיב קובץ קלט (טקסט/בינארי)
-     * @param outputPath  נתיב קובץ מוצפן (פלט)
-     */
+
+
     public void encryptFile(String inputPath, String outputPath) {
         printBanner("AES-128 CBC  —  ENCRYPTION");
 
@@ -69,10 +40,10 @@ public class AESFileEncryptor {
         System.out.println("  Output : " + outputPath);
         System.out.println("  IV     : " + PicariaAES.toHex(iv) + "  (derived from key)");
 
-        // הדפסת מפתחות הסיבוב
+
         aes.printRoundKeys();
 
-        // PKCS7 padding — מרחיב ל-כפולה של 16
+
         byte[] padded    = pkcs7Pad(plaintext);
         int    numBlocks = padded.length / BLOCK_SIZE;
 
@@ -81,17 +52,17 @@ public class AESFileEncryptor {
         System.out.println("\n  ── Block-by-block encryption ─────────────────────────────────");
 
         byte[] ciphertext = new byte[padded.length];
-        byte[] prev       = iv.clone();   // CBC: מתחיל עם IV
+        byte[] prev       = iv.clone();
 
         for (int i = 0; i < numBlocks; i++) {
             byte[] plain = Arrays.copyOfRange(padded, i * BLOCK_SIZE, (i+1) * BLOCK_SIZE);
 
-            // CBC XOR
+
             byte[] xored     = xorBlocks(plain, prev);
             byte[] encrypted = aes.encryptBlock(xored);
 
             System.arraycopy(encrypted, 0, ciphertext, i * BLOCK_SIZE, BLOCK_SIZE);
-            prev = encrypted;   // CBC: הבלוק המוצפן הנוכחי → קלט לבא
+            prev = encrypted;
 
             if (i < VERBOSE_BLOCKS) {
                 System.out.printf("  Block %2d │ PT  : %s%n", i, PicariaAES.toHex(plain));
@@ -103,7 +74,7 @@ public class AESFileEncryptor {
             }
         }
 
-        // כתיבה: [IV][ciphertext]
+
         try (FileOutputStream fos = new FileOutputStream(outputPath)) {
             fos.write(iv);
             fos.write(ciphertext);
@@ -117,16 +88,7 @@ public class AESFileEncryptor {
         printFooter("ENCRYPTION COMPLETE  →  " + outputPath);
     }
 
-    // =========================================================
-    // Decryption
-    // =========================================================
 
-    /**
-     * מפענח קובץ שהוצפן על-ידי encryptFile.
-     *
-     * @param inputPath   נתיב קובץ מוצפן
-     * @param outputPath  נתיב קובץ מפוענח (פלט)
-     */
     public void decryptFile(String inputPath, String outputPath) {
         printBanner("AES-128 CBC  —  DECRYPTION");
 
@@ -136,7 +98,7 @@ public class AESFileEncryptor {
             return;
         }
 
-        // פיצול IV + ciphertext
+
         byte[] fileIv     = Arrays.copyOfRange(fileData, 0, BLOCK_SIZE);
         byte[] ciphertext = Arrays.copyOfRange(fileData, BLOCK_SIZE, fileData.length);
         int    numBlocks  = ciphertext.length / BLOCK_SIZE;
@@ -156,7 +118,7 @@ public class AESFileEncryptor {
             byte[] plain     = xorBlocks(decrypted, prev);
 
             System.arraycopy(plain, 0, plaintext, i * BLOCK_SIZE, BLOCK_SIZE);
-            prev = cipher;   // CBC: ciphertext הנוכחי → XOR לבא
+            prev = cipher;
 
             if (i < VERBOSE_BLOCKS) {
                 System.out.printf("  Block %2d │ CT  : %s%n", i, PicariaAES.toHex(cipher));
@@ -186,11 +148,8 @@ public class AESFileEncryptor {
         printFooter("DECRYPTION COMPLETE  →  " + outputPath);
     }
 
-    // =========================================================
-    // Helpers
-    // =========================================================
 
-    /** PKCS7: ממלא ב-N בתים שכל אחד שווה N, כך שהאורך יתחלק ב-16. */
+
     private byte[] pkcs7Pad(byte[] data) {
         int padLen = BLOCK_SIZE - (data.length % BLOCK_SIZE);
         byte[] padded = new byte[data.length + padLen];
@@ -200,7 +159,7 @@ public class AESFileEncryptor {
         return padded;
     }
 
-    /** מסיר PKCS7 padding. */
+    // מסיר padding
     private byte[] pkcs7Unpad(byte[] data) {
         if (data.length == 0) return data;
         int padLen = data[data.length - 1] & 0xFF;
@@ -208,7 +167,7 @@ public class AESFileEncryptor {
         return Arrays.copyOfRange(data, 0, data.length - padLen);
     }
 
-    /** XOR בין שני בלוקים של BLOCK_SIZE בתים. */
+    // xor
     private byte[] xorBlocks(byte[] a, byte[] b) {
         byte[] result = new byte[BLOCK_SIZE];
         for (int i = 0; i < BLOCK_SIZE; i++)
@@ -216,7 +175,7 @@ public class AESFileEncryptor {
         return result;
     }
 
-    /** קורא קובץ, ואם לא קיים — יוצר קובץ הדגמה. */
+    // קורא קובץ ואם לא קיים יוצר
     private byte[] readOrCreateFile(String path) {
         File f = new File(path);
         if (!f.exists()) {
@@ -251,9 +210,7 @@ public class AESFileEncryptor {
         }
     }
 
-    // =========================================================
-    // Print Helpers
-    // =========================================================
+
 
     private void printBanner(String title) {
         System.out.println();

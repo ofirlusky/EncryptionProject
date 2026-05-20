@@ -11,22 +11,6 @@ import utils.Node;
 
 import java.util.List;
 
-/**
- * AvalancheTester — בדיקת Strict Avalanche Criterion (SAC).
- *
- *  הלוח (13 משבצות) מקודד לרצף ביטים:
- *    כל משבצת = 2 ביטים:
- *      00 = EMPTY
- *      01 = OCCUPIED_P1
- *      10 = OCCUPIED_P2
- *    סה"כ: 13 × 2 = 26 ביטים.
- *
- *  הופכים בדיוק ביט אחד מתוך 26 (XOR עם 1),
- *  מפענחים בחזרה ללוח, ומריצים את 4 האלגוריתמים.
- *
- *  אם שינוי של ביט בודד בקלט משנה את המפתח לגמרי —
- *  זהו SAC, הקריטריון שבו נבדק AES.
- */
 public class AvalancheTester {
 
     public static class AvalancheResult {
@@ -42,9 +26,7 @@ public class AvalancheTester {
 
     private static final int BITS_PER_CELL = 2;
 
-    // =========================================================
-    // SAC Test
-    // =========================================================
+
 
     public static AvalancheResult runAvalanche(Node[] board, List<Move> gameHistory) {
         AvalancheResult r = new AvalancheResult();
@@ -85,9 +67,6 @@ public class AvalancheTester {
         return r;
     }
 
-    // =========================================================
-    // קידוד / פענוח לוח ↔ ביטים
-    // =========================================================
 
     private static int[] boardToBits(Node[] board) {
         int[] bits = new int[board.length * BITS_PER_CELL];
@@ -106,7 +85,7 @@ public class AvalancheTester {
             int lo  = bits[2 * i + 1];
             int val = (hi << 1) | lo;
 
-            if (val == 3) val = 0;   // 11 לא-חוקי → EMPTY
+            if (val == 3) val = 0;   // לא חוקי
 
             Node node = new Node(i);
             node.setCurrentPieceValue(intToPiece(val));
@@ -131,10 +110,7 @@ public class AvalancheTester {
         }
     }
 
-    /**
-     * בוחר ביט להפוך — מעדיף ביט של משבצת תפוסה
-     * (משפיע יותר על המנועים). אם הלוח ריק — ביט אמצעי.
-     */
+
     private static int chooseFlipBit(int[] bits) {
         for (int i = 0; i < bits.length; i++) {
             if (bits[i] == 1) return i;
@@ -151,9 +127,6 @@ public class AvalancheTester {
         return sb.toString();
     }
 
-    // =========================================================
-    // Helpers
-    // =========================================================
 
     public static byte[] computeKey(Node[] board, List<Move> history) {
         BaseCryptoGraph kruskal = new KruskalCryptoGraph(board);
@@ -180,7 +153,7 @@ public class AvalancheTester {
         return sb.toString();
     }
 
-    /** מפת הבדלים: # = ביט שהשתנה, . = ביט זהה */
+
     public static String diffMap(byte[] a, byte[] b) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < Math.min(a.length, b.length); i++) {

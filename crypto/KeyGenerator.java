@@ -2,28 +2,7 @@ package crypto;
 
 import java.util.List;
 
-/**
- * KeyGenerator — משלב את תוצאות 4 האלגוריתמים למפתח 256-ביט.
- *
- * תהליך ה-pipeline:
- *   Phase 1 — XOR בין שלוש מטריצות (Kruskal, MaxFlow, Bitwise)
- *   Phase 2 — ערבוב עם זרם אוילר + פולינום L (בהשראת function_L)
- *   Phase 3 — קיפול ל-seed של 256 ביט
- *   Phase 4 — שלב DIFFUSION ← חדש! מבטיח אפקט מפולת
- *   Phase 5 — הרחבה ע"י PRNG (בהשראת function_G/H)
- *   Phase 6 — DIFFUSION סופי על המפתח
- *
- * ── מה תוקן ולמה ──────────────────────────────────────────────────────
- * הבעיה הקודמת: שינוי ביט אחד בקלט שינה רק ביט אחד במפתח.
- * הסיבה: כל ערך השפיע רק על תא בודד — אין "פיזור" (diffusion).
- *
- * הפתרון: שלב Diffusion בהשראת אלגוריתמים כמו SHA-256:
- *   1. Avalanche mixing — כל בית מערבב את כל הבתים שלפניו
- *   2. Bit rotation     — סיבוב ביטים שמפזר שינוי לרוחב הבית
- *   3. Multi-pass       — שני מעברים (קדימה ואחורה) לפיזור מלא
- *
- * עיקרון: שינוי ביט אחד בקלט → משפיע על כל 256 ביטי הפלט.
- */
+
 public class KeyGenerator {
 
     private static final long MODULUS   = 36389L;
@@ -31,7 +10,7 @@ public class KeyGenerator {
     private static final int  KEY_BYTES = 32;
 
     // קבועי ערבוב (בהשראת קבועי SHA / FNV — מספרים ראשוניים גדולים)
-    private static final int PRIME_A = 0x9E3779B1;   // יחס הזהב (Knuth)
+    private static final int PRIME_A = 0x9E3779B1;   // יחס  (Knuth)
     private static final int PRIME_B = 0x85EBCA77;
     private static final int PRIME_C = 0xC2B2AE3D;
 
@@ -39,16 +18,14 @@ public class KeyGenerator {
         return x * x - 2 * x + 223;
     }
 
-    // =========================================================
-    // נקודת הכניסה
-    // =========================================================
+
 
     public static byte[] generateKey(int[][] kruskalMatrix,
                                      int[][] maxFlowMatrix,
                                      int[][] bitwiseMatrix,
                                      List<Integer> eulerStream) {
 
-        // ── Phase 1: XOR בין שלוש המטריצות ──────────────────────────────
+
         int n = kruskalMatrix.length;
         int[] flat = new int[n * n];
 
@@ -60,14 +37,14 @@ public class KeyGenerator {
             }
         }
 
-        // ── Phase 2: ערבוב עם זרם אוילר + פולינום L ─────────────────────
-        // שינוי: כל ערך אוילר מתפשט על כל המערך (לא תא בודד)
+
+
         for (int i = 0; i < eulerStream.size(); i++) {
             int v     = eulerStream.get(i);
             int lv    = functionL(v);
             int mixed = lv ^ (i * 31) ^ (v * 17);
 
-            // הפצה: כל ערך אוילר משפיע על כל תא במערך flat
+
             for (int k = 0; k < flat.length; k++) {
                 flat[k] ^= mixed;
                 flat[k]  = Integer.rotateLeft(flat[k], (v + k) & 31);
@@ -75,7 +52,7 @@ public class KeyGenerator {
             }
         }
 
-        // ── Phase 3: קיפול ל-seed של 256 ביט ────────────────────────────
+
         byte[] seed = new byte[KEY_BYTES];
         for (int i = 0; i < flat.length; i++) {
             seed[i % KEY_BYTES]            ^= (byte)( flat[i]        & 0xFF);
@@ -84,55 +61,38 @@ public class KeyGenerator {
             seed[(i * 7 + 1) % KEY_BYTES]  ^= (byte)((flat[i] >> 24) & 0xFF);
         }
 
-        // ── Phase 4: DIFFUSION על ה-seed ────────────────────────────────
-        // מבטיח שכל שינוי בקלט מתפשט לכל הביטים לפני ה-PRNG
+
         diffuse(seed);
 
-        // ── Phase 5: הרחבת ה-seed ע"י PRNG ──────────────────────────────
         byte[] key = expandWithPRNG(seed);
 
-        // ── Phase 6: DIFFUSION סופי על המפתח ────────────────────────────
-        // מעבר אחרון שמבטיח אפקט מפולת מלא בפלט הסופי
         diffuse(key);
-        diffuse(key);   // שני מעברים → פיזור מקסימלי
+        diffuse(key);
 
         return key;
     }
 
-    // =========================================================
-    // DIFFUSION — לב התיקון
-    //
-    // הפונקציה מבטיחה שכל ביט במערך משפיע על כל הביטים האחרים.
-    // טכניקה (בהשראת SHA-256 ו-MurmurHash):
-    //
-    //   מעבר קדימה:  כל בית סופג את כל הבתים שלפניו (chaining)
-    //   ערבוב ביט:   rotation + multiply בפריים → פיזור לרוחב הבית
-    //   מעבר אחורה:  שוב, מהסוף להתחלה → פיזור דו-כיווני
-    //
-    // אחרי שני המעברים: שינוי של ביט אחד בכל מקום
-    // מתפשט (avalanche) לכל 256 הביטים.
-    // =========================================================
 
     private static void diffuse(byte[] data) {
         int len = data.length;
 
-        // accumulator — "זוכר" את כל מה שעבר עד כה
+
         int acc = 0x12345678;
 
-        // ── מעבר 1: קדימה (כל בית סופג את ההיסטוריה) ────────────────────
+
         for (int i = 0; i < len; i++) {
             int b = data[i] & 0xFF;
 
             acc ^= b;
-            acc *= PRIME_A;                       // ערבוב כפלי
-            acc  = Integer.rotateLeft(acc, 13);   // סיבוב — פיזור לרוחב
-            acc ^= (acc >>> 7);                   // XOR-shift — ערבוב פנימי
+            acc *= PRIME_A;
+            acc  = Integer.rotateLeft(acc, 13);
+            acc ^= (acc >>> 7);
             acc *= PRIME_B;
 
             data[i] = (byte)(acc & 0xFF);
         }
 
-        // ── מעבר 2: אחורה (פיזור דו-כיווני) ─────────────────────────────
+
         acc = 0x76543210;
         for (int i = len - 1; i >= 0; i--) {
             int b = data[i] & 0xFF;
@@ -146,24 +106,20 @@ public class KeyGenerator {
             data[i] = (byte)((data[i] & 0xFF) ^ (acc & 0xFF));
         }
 
-        // ── מעבר 3: ערבוב סופי בין כל זוגות הבתים ───────────────────────
-        // כל בית מושפע מהבית "ממול" — מבטיח שאין אזור "מבודד"
         for (int i = 0; i < len / 2; i++) {
             int j = len - 1 - i;
             int x = data[i] & 0xFF;
             int y = data[j] & 0xFF;
 
             int mixed = (x + y) & 0xFF;
-            mixed = ((mixed << 3) | (mixed >>> 5)) & 0xFF;   // rotate בתוך הבית
+            mixed = ((mixed << 3) | (mixed >>> 5)) & 0xFF;
 
             data[i] = (byte)(x ^ mixed);
             data[j] = (byte)(y ^ mixed);
         }
     }
 
-    // =========================================================
-    // Phase 5 — PRNG (function_G/H) — ללא שינוי בלוגיקה
-    // =========================================================
+
 
     private static byte[] expandWithPRNG(byte[] seed) {
         StringBuilder sb = new StringBuilder();
@@ -235,9 +191,6 @@ public class KeyGenerator {
         return result;
     }
 
-    // =========================================================
-    // הדפסת המפתח
-    // =========================================================
 
     public static void printKey(byte[] key) {
         System.out.println();

@@ -63,9 +63,7 @@ public class BoardPanel extends JPanel {
         }
     }
 
-    /**
-     * סוגר את חלון המשחק ופותח את חלון הקריפטו.
-     */
+
     private void launchCrypto() {
         if (cryptoLaunched) return;
         cryptoLaunched = true;

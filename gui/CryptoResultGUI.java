@@ -44,9 +44,7 @@ public class CryptoResultGUI extends JFrame {
     private static final Color GREEN = new Color(46, 160, 67);
     private static final Color TEXT  = new Color(220, 220, 220);
 
-    // =========================================================
-    // Constructor
-    // =========================================================
+
 
     public CryptoResultGUI(Node[] finalBoard, List<Move> gameHistory) {
         this.finalBoard  = finalBoard;
@@ -66,9 +64,7 @@ public class CryptoResultGUI extends JFrame {
         setVisible(true);
     }
 
-    // =========================================================
-    // TAB 1 — Encryption
-    // =========================================================
+
 
     private JPanel buildEncryptionTab() {
         JPanel root = new JPanel(new BorderLayout());
@@ -98,7 +94,7 @@ public class CryptoResultGUI extends JFrame {
         filePanel.add(chooseButton);
         filePanel.add(autoButton);
 
-        fileLabel = new JLabel("No file chosen — one will be created automatically");
+        fileLabel = new JLabel("No file chosen - one will be created automatically");
         fileLabel.setForeground(Color.ORANGE);
         fileLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -151,9 +147,7 @@ public class CryptoResultGUI extends JFrame {
         return root;
     }
 
-    // =========================================================
-    // TAB 2 — Key Quality Proof
-    // =========================================================
+
 
     private JPanel buildProofTab() {
         JPanel root = new JPanel(new BorderLayout());
@@ -174,7 +168,7 @@ public class CryptoResultGUI extends JFrame {
                         "  The board is encoded as bits. if I flip even ONE bit\n" +
                         "  it re-generate the key. A strong key changes completely\n" +
                         "  from a single-bit input change.\n\n" +
-                        "  This is the strongest avalanche test — the same\n"
+                        "  This is the strongest avalanche test - the same\n"
 
         );
         explain.setEditable(false);
@@ -205,9 +199,7 @@ public class CryptoResultGUI extends JFrame {
         return root;
     }
 
-    // =========================================================
-    // Encryption — SwingWorker
-    // =========================================================
+
 
     private void startProcess() {
         startButton.setEnabled(false);
@@ -220,39 +212,39 @@ public class CryptoResultGUI extends JFrame {
         SwingWorker<byte[], String> worker = new SwingWorker<>() {
             @Override
             protected byte[] doInBackground() {
-                publish("Step 1 of 6  —  Kruskal algorithm...");
+                publish("Step 1 of 6  -  Kruskal algorithm...");
                 BaseCryptoGraph kruskal = new KruskalCryptoGraph(finalBoard);
                 publish("              done  ✓");
 
-                publish("Step 2 of 6  —  Max-Flow algorithm...");
+                publish("Step 2 of 6  -  Max-Flow algorithm...");
                 BaseCryptoGraph maxFlow = new MaxFlowCryptoGraph(finalBoard);
                 publish("              done  ✓");
 
-                publish("Step 3 of 6  —  Bitwise algorithm...");
+                publish("Step 3 of 6  -  Bitwise algorithm...");
                 BaseCryptoGraph bitwise = new BitwiseCryptoGraph(finalBoard);
                 publish("              done  ✓");
 
-                publish("Step 4 of 6  —  Eulerian path...");
+                publish("Step 4 of 6  -  Eulerian path...");
                 EulerianCryptoGraph euler = new EulerianCryptoGraph(13, gameHistory);
                 publish("              done  ✓");
 
-                publish("\nStep 5 of 6  —  Combining all results into a 256-bit key...");
+                publish("\nStep 5 of 6  -  Combining all results into a 256-bit key...");
                 byte[] key = KeyGenerator.generateKey(
                         kruskal.getKeyMatrix(), maxFlow.getKeyMatrix(),
                         bitwise.getKeyMatrix(), euler.getKeyStream());
-                publish("              done  ✓");
+                publish("              done  ");
                 publish("\nGenerated encryption key:");
                 publish("  " + AvalancheTester.toHex(key));
 
-                publish("\nStep 6 of 6  —  AES-128 encryption...");
+                publish("\nStep 6 of 6  - AES-128 encryption...");
                 prepareInputFile();
                 silently(() -> {
                     AESFileEncryptor enc = new AESFileEncryptor(key);
                     enc.encryptFile(inputFilePath, ENCRYPTED_FILE);
                     enc.decryptFile(ENCRYPTED_FILE, DECRYPTED_FILE);
                 });
-                publish("              encryption done  ✓");
-                publish("              decryption verified  ✓");
+                publish("              encryption done  ");
+                publish("              decryption verified  ");
                 publish("\nAll done!  Use the buttons below to open your files.");
                 return key;
             }
@@ -294,11 +286,10 @@ public class CryptoResultGUI extends JFrame {
             @Override
             protected String doInBackground() {
 
-                // בדיקת SAC: הופכים ביט אחד בלוח ומשווים מפתחות
                 AvalancheTester.AvalancheResult av =
                         silentlyCompute(() -> AvalancheTester.runAvalanche(finalBoard, gameHistory));
 
-                // ── בניית הדוח ──────────────────────────────────────────
+                // בניית הדוח
                 StringBuilder sb = new StringBuilder();
 
                 sb.append("\n");
@@ -312,7 +303,7 @@ public class CryptoResultGUI extends JFrame {
                 sb.append("Board encoded as bits (after flipping bit #")
                         .append(av.flippedBitIndex).append("):\n");
                 sb.append("  ").append(av.boardBitsAfter).append("\n");
-                sb.append("  → exactly ONE bit changed in the input\n\n");
+                sb.append("   exactly ONE bit changed in the input\n\n");
                 sb.append("──────────────────────────────────────────────────────────\n");
                 sb.append("Key BEFORE the 1-bit change:\n");
                 sb.append("  ").append(AvalancheTester.toHex(av.originalKey)).append("\n\n");
@@ -320,7 +311,7 @@ public class CryptoResultGUI extends JFrame {
                 sb.append("  ").append(AvalancheTester.toHex(av.modifiedKey)).append("\n\n");
                 sb.append("──────────────────────────────────────────────────────────\n");
                 sb.append("RESULT:  The key changed completely.\n");
-                sb.append("         Flipping ONE bit in the input → entirely new key.\n\n");
+                sb.append("         Flipping ONE bit in the input - entirely new key.\n\n");
                 sb.append("Bit difference map  ( # = changed  ,  . = same ):\n\n");
                 sb.append(AvalancheTester.diffMap(av.originalKey, av.modifiedKey));
                 sb.append("\n══════════════════════════════════════════════════════════\n");
@@ -342,9 +333,7 @@ public class CryptoResultGUI extends JFrame {
         worker.execute();
     }
 
-    // =========================================================
-    // Helpers
-    // =========================================================
+
 
     private JButton styledButton(String text, boolean primary) {
         JButton b = new JButton(text);

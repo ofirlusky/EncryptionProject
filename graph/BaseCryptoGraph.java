@@ -19,9 +19,6 @@ public abstract class BaseCryptoGraph {
 
     protected int[][] keyMatrix;
 
-    // =========================================================
-    // Constructor
-    // =========================================================
 
     public BaseCryptoGraph(Node[] finalBoard) {
         this.vertices  = finalBoard;
@@ -37,9 +34,7 @@ public abstract class BaseCryptoGraph {
         }
     }
 
-    // =========================================================
-    // fillWeightMatrix — ללא שינוי
-    // =========================================================
+
 
     protected void fillWeightMatrix() {
         int size = vertices.length;
@@ -75,12 +70,8 @@ public abstract class BaseCryptoGraph {
         return su;
     }
 
-    // =========================================================
-    //  Floyd-Warshall המקורי — נשמר בהערה להשוואה
-    //
-    //  סיבוכיות: O(n³)
-    //  על הגרף הזה: 13³ = 2,197 איטרציות בכל מקרה.
-    // =========================================================
+    // בכוונה אני משאיר פה את הקוד של פלוייד ווארשל , על מנת להויכח את זה שייעלתי אותו
+
 
     /*
     protected void applyFloydWarshall() {
@@ -113,43 +104,12 @@ public abstract class BaseCryptoGraph {
     }
     */
 
-    // =========================================================
-    //  applyFloydWarshall — גרסה מיועלת
-    //
-    //  רעיון מרכזי:
-    //  Floyd-Warshall ו-Dijkstra מחשבים את אותו הדבר —
-    //  all-pairs shortest paths. לגרף דליל עם משקלים חיוביים,
-    //  n קריאות לדייקסטרה עם MinHeap נותנות ירידה אמיתית
-    //  בסיבוכיות:
-    //
-    //  ┌─────────────────────┬──────────────────────────────┐
-    //  │ גרסה                │ סיבוכיות                     │
-    //  ├─────────────────────┼──────────────────────────────┤
-    //  │ Floyd-Warshall      │ O(n³)                        │
-    //  │ n × Dijkstra + Heap │ O(n × (n+E) × log n)        │
-    //  │   גרף דליל E=O(n)  │ = O(n² log n)               │
-    //  └─────────────────────┴──────────────────────────────┘
-    //
-    //  על הגרף הזה (n=13, E≈30):
-    //    Floyd-Warshall: 13³              = 2,197 פעולות
-    //    n × Dijkstra:  13×(13+30)×log13 ≈   846 פעולות
-    //    → חיסכון של ~60% בפועל + O(n² log n) < O(n³) אסימפטוטית
-    //
-    //  הפלט של keyMatrix זהה לחלוטין לגרסת Floyd-Warshall —
-    //  שניהם מחשבים מסלול קצר מינימלי בין כל זוג צמתים.
-    //  תנאי: משקלי הגרף חיוביים (מתקיים בכל שלושת המנועים).
-    // =========================================================
+
 
     protected void applyFloydWarshall() {
         int n   = vertices.length;
         int INF = 999999;
 
-        // ── אתחול מטריצת משקלי הקצוות ────────────────────────────────────
-        // אותה לוגיקה כמו ב-Floyd-Warshall המקורי:
-        //   i == j              → 0
-        //   weightMatrix == 0   → INF (אין קשת)
-        //   weightMatrix >= INF → INF (אין קשת)
-        //   אחרת                → משקל הקשת
         int[][] edgeW = new int[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -163,29 +123,13 @@ public abstract class BaseCryptoGraph {
             }
         }
 
-        // ── n קריאות לדייקסטרה — אחת מכל צומת מקור ─────────────────────
-        // כל קריאה מחשבת את המסלול הקצר ביותר מ-src לכל צומת אחר.
-        // התוצאה ממלאת שורה אחת ב-keyMatrix.
+
         keyMatrix = new int[n][n];
         for (int src = 0; src < n; src++) {
             keyMatrix[src] = runDijkstra(src, n, edgeW, INF);
         }
     }
 
-    // =========================================================
-    //  Dijkstra עם MinHeap
-    //
-    //  סיבוכיות לקריאה אחת: O((n + E) log n)
-    //    n  extractMin   × O(log n) = O(n log n)
-    //    E  decreaseKey  × O(log n) = O(E log n)
-    //    סה"כ: O((n+E) log n)
-    //
-    //  @param src   צומת מקור
-    //  @param n     מספר צמתים
-    //  @param edgeW מטריצת משקלים (INF = אין קשת)
-    //  @param INF   ערך אינסוף
-    //  @return      dist[v] = מסלול קצר ביותר מ-src ל-v
-    // =========================================================
 
     private int[] runDijkstra(int src, int n, int[][] edgeW, int INF) {
 
@@ -227,9 +171,7 @@ public abstract class BaseCryptoGraph {
         return dist;
     }
 
-    // =========================================================
-    // Print helpers — ללא שינוי
-    // =========================================================
+
 
     public void printMatrix() {
         System.out.println("\n--- Adjacency Matrix (Final Weights) ---");
@@ -252,7 +194,7 @@ public abstract class BaseCryptoGraph {
     }
 
     public void printKeyMatrix() {
-        System.out.println("floyidddddddddddddddddddddddddddd warshelllllllllllllllll");
+        System.out.println("floyidd warshel");
         for (int i = 0; i < keyMatrix.length; i++) {
             for (int j = 0; j < keyMatrix.length; j++) {
                 if (keyMatrix[i][j] >= 999999) System.out.print("INF\t");
