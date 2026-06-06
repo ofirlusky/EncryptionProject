@@ -35,14 +35,14 @@ public class MinHeap {
 
 
     public int extractMin() {
-        int minNode     = heapNode[0];
+        int minNode = heapNode[0];
         posInHeap[minNode] = -1;
 
         size--;
         if (size > 0) {
 
-            heapDist[0]      = heapDist[size];
-            heapNode[0]      = heapNode[size];
+            heapDist[0]  = heapDist[size];
+            heapNode[0]  = heapNode[size];
             posInHeap[heapNode[0]] = 0;
             siftDown(0);
         }
@@ -51,7 +51,7 @@ public class MinHeap {
 
 
     public void decreaseKey(int node, int newDist) {
-        int pos       = posInHeap[node];
+        int pos = posInHeap[node];
         heapDist[pos] = newDist;
         siftUp(pos);
     }

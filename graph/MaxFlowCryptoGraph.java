@@ -12,12 +12,17 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
 
 
     private int[] eTo;    // eTo[i]  = צומת יעד של קשת i
+    //  נותן מספר קשת ומקבל את היעד שלה -צומת יעד
+
     private int[] eCap;   // eCap[i] = קיבולת נשארת של קשת i
+    // נותן מספר קשת ומקבל את הקיבלות שלה
+    // רשת שיורית
     private int   eCount; // מספר הקשתות הכולל (כולל הפוכות)
 
     // adjList[u] = רשימת אינדקסים לתוך eTo/eCap
     // ממומשת כ-List<Integer> (Java standard — ArrayList)
     private List<Integer>[] adjList;
+    // נותן מספר צומת ומקבל את כל מספרי הקשתות שמחוברות אליו
 
     // מערכי עזר שיצרתי
     private int[] dist;   // dist[u] = מרחק שכבה מהמקור (BFS)
@@ -32,7 +37,8 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
     }
 
 
-
+    //  שאני בונה את הגרף הסופי שפלוייד ווארשל הולך לעבור עליו אז הוא עובר על 13 צמתים עבור כל צמתים שכנים הוא
+    //  יקרא ל dinic שיפעל על הגרף שבניתי ויקח את ה max flow הזה וישים אותו במשקל הסופי במטריצה
     @Override
     protected int calculateEdgeWeight(Node u, Node v) {
         int source = u.getIDofNode();
@@ -46,7 +52,7 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
     private int runDinic(int source, int sink) {
         int n = vertices.length;
 
-
+        // על כל זוג צמתים יכולה להיות קשת קדימה וקשת הפוכה
         int maxEdges = n * n * 2;   // כולל קשתות הפוכות
         eTo   = new int[maxEdges];
         eCap  = new int[maxEdges];
@@ -58,7 +64,7 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
         dist = new int[n];
         iter = new int[n];
 
-        // בניית גרף
+        // בניית גרף עם חישוב קיבולת לפי פונקציה מוגדרת שעל הגרף הזה בין צמתים source ו sink נמצא maxflow
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (i != j && areNeighbors(i, j)) {
@@ -86,6 +92,8 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
     }
 
 
+
+    // בונה את המצב ההתחלתי של הרשת השיורית
     private void addEdgePair(int from, int to, int capacity) {
         // קשת קדימה
         adjList[from].add(eCount);
@@ -108,11 +116,14 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
         Deque<Integer> queue = new ArrayDeque<>();
         queue.add(source);
 
+        // עובר על כל הצמתים בתור ועוברים על הקשתות שיוצאות מהם ומחלצים את היעד
         while (!queue.isEmpty()) {
+
             int u = queue.poll();
             for (int idx : adjList[u]) {
                 int v = eTo[idx];
                 // מתקדמים רק בקשתות עם קיבולת נשארת לצמתים שלא ביקרנו
+                // מתקדמים רק עם קשתות שקיבלות שלה גדול מ 0 -
                 if (eCap[idx] > 0 && dist[v] < 0) {
                     dist[v] = dist[u] + 1;
                     queue.add(v);
@@ -123,8 +134,8 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
         return dist[sink] >= 0;
     }
 
-
-
+    // תפקיד הפונקציה הוא למצוא מסלול פנוי אחד בלבד מהצומת הנוכחי ועד ליעד (בתוך שכבות ה-BFS), לבדוק מהו הצינור הכי צר לאורך המסלול הזה (צוואר הבקבוק),
+    //  ולעדכן את כל הצינורות בדרך בהתאם לכמות המים שעברה. מה שהיא מחזירה בסוף זו את כמות המים המדויקת שהיא הצליחה להעביר
     private int dfsBlocking(int u, int sink, int pushed) {
         if (u == sink) return pushed;
 
@@ -153,6 +164,8 @@ public class MaxFlowCryptoGraph extends BaseCryptoGraph {
 
 
 
+    // מגדיר קיבולת התחלתית  לכל קשת
+    //מצב הלוח משפיע על הקיבולת
     private int getInitialCapacity(Node u, Node v) {
         int su   = StatuseOfTheNode(u);
         int sv   = StatuseOfTheNode(v);

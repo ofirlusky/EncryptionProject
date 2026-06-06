@@ -146,10 +146,10 @@ public abstract class BaseCryptoGraph {
         }
 
         while (!heap.isEmpty()) {
-            // הוצא את הצומת עם המרחק הקטן ביותר — O(log n)
+            // הוצא את הצומת עם המרחק הקטן ביותר - O(log n)
             int u = heap.extractMin();
 
-            // אם המרחק הוא INF — כל הצמתים הנותרים בלתי נגישים
+            // אם המרחק הוא INF - כל הצמתים הנותרים בלתי נגישים
             if (dist[u] == INF) break;
 
             // סריקת שכנים של u וריענון מרחקים
@@ -160,7 +160,7 @@ public abstract class BaseCryptoGraph {
 
                 if (newDist < dist[v]) {
                     dist[v] = newDist;
-                    // decreaseKey — O(log n) הודות ל-posInHeap ב-MinHeap
+                    // decreaseKey - O(log n) הודות ל-posInHeap ב-MinHeap
                     if (heap.contains(v)) {
                         heap.decreaseKey(v, newDist);
                     }

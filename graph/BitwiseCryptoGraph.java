@@ -6,7 +6,7 @@ import utils.Node;
 public class BitwiseCryptoGraph extends BaseCryptoGraph {
 
 
-    //  תכונה ייחודית למחלקה הזאת , מוכנס לה ערך שמייצג את כל הגרף
+    //  תכונה ייחודית למחלקה הזאת , מוכנס לה ערך שמייצג את כל המשחק
     // מספיק ששחקן משנה דבר הכי קטן במשחק כל הboard mask משתנה
     private int boardMask;
 

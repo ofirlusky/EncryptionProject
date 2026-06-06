@@ -14,7 +14,7 @@ public class PicariaGame {
     private List<Move> gameHistory;
 
 
-    //
+    // מיקום זה הצומת ואז יש את השכנים - רשימת סמיכויות
     public static final int[][] neighbors =
             {
             {1, 3, 5},
@@ -31,6 +31,8 @@ public class PicariaGame {
             {6, 8, 9, 10, 12},
             {7, 9, 11}
     };
+
+    // לגבי coords המיקום הוא הצומת ואז הערך הוא הנקודה
     public static final int[][] COORDS = {
             {0,0}, {2,0}, {4,0}, {1,1}, {3,1}, {0,2}, {2,2}, {4,2}, {1,3}, {3,3}, {0,4}, {2,4}, {4,4}
     };
@@ -46,6 +48,10 @@ public class PicariaGame {
     private int numberOfpiecesPlaced = 0;
     private Node selectedNode = null;
     private boolean isGameOver = false;
+
+
+    // מערך של מילונים , האינדקס במערך מייצג את הצומת ואז יש המון מילונים שמראים את הכיוון ואת השכנים שזהם ה values בכיוון הזה
+    // מבנה נתונים קריטי רצח כי בלי זה לא הייתי יכול לבדוק נצחון
     private static Map<Direction, List<Integer>>[] neighborsByDir;
 
     public PicariaGame() {
@@ -63,19 +69,30 @@ public class PicariaGame {
         buildNeighborsByDir();
     }
 
+
+    //
     private void buildNeighborsByDir() {
         neighborsByDir = new HashMap[TOTAL_NODES];
+        // מאתחל מילון עבור כל צומת
         for (int i = 0; i < TOTAL_NODES; i++) {
             neighborsByDir[i] = new HashMap<>();
+            // עובר על כל שכן של צומת
             for (int neighborId : neighbors[i]) {
+                // מחשב את ההפרש בין הצומת לשכן
+                // כמה זז ימינה או שמאלה
                 int dx = COORDS[neighborId][0] - COORDS[i][0];
+                // כמה זז למעלה או למטה
                 int dy = COORDS[neighborId][1] - COORDS[i][1];
+                //
                 Direction dir = getDirection(dx, dy);
+                // ממלא את המערך במיקום הצומת שהערך הוא כיוון שמצביע על הערך צומת שכן
                 neighborsByDir[i].computeIfAbsent(dir, k -> new ArrayList<>()).add(neighborId);
             }
         }
     }
 
+
+    //  ממיר מספר לכיוון
     private Direction getDirection(int dx, int dy) {
         if (dy == 0)
         {
@@ -108,6 +125,8 @@ public class PicariaGame {
         }
     }
 
+
+    // בהתחלה במשחק שמים ישר 6 שחקנים
     private void handleDropPhase(Node clickedNode) {
         if(GameRules.isPeaceFree(clickedNode)) {
             if(currentTurn == PlayerID.PLAYER_ONE) {
@@ -128,6 +147,13 @@ public class PicariaGame {
         }
     }
 
+
+
+
+    // כאשר שלב ההנחה הסתיים אז שחקנים מזיזים כרגיל ז
+    // selectedNode = מי אני רוצה להזיז
+    // clickedNode = לאיפה אני רוצה להזיז
+    // הקלט פה מייצג גם לחיצה על צומת למעבר וגם מעבר
     private void handleMovePhase(Node clickedNode) {
         if (selectedNode == null) {
             if (isCurrentPlayerPiece(clickedNode)) {
@@ -142,6 +168,8 @@ public class PicariaGame {
 
             if (GameRules.isValidMove(selectedNode, clickedNode, neighbors)) {
 
+
+                // שומר בהיסטוריה את המהלך
                 recordMove(selectedNode.getIDofNode(), clickedNode.getIDofNode());
 
                 clickedNode.setCurrentPieceValue(selectedNode.getCurrentPieceValue());

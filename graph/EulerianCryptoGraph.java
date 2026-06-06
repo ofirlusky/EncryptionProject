@@ -10,10 +10,19 @@ import java.util.Stack;
 
 public class EulerianCryptoGraph {
 
+
+
+    // adjList[0] -> [1, 2]
+    // המיקום מייצג צומת שמצביע על השכנים שלו - גרף מכוון
     private List<Integer>[] adjList;
+
+    // מייצג כמה צמתים יש בגרף
     private int numNodes;
 
+
+    // הפלט הסופי מהווה חלק ממפתח ההצפנה !
     private List<Integer> keyStream;
+
 
 
     public EulerianCryptoGraph(int totalNodes, List<Move> gameHistory) {
@@ -30,18 +39,26 @@ public class EulerianCryptoGraph {
         int startNode = 0;
 
         if (gameHistory != null && !gameHistory.isEmpty()) {
+            // נתחיל את הריצה על איפה שהתחיל המשחק
             startNode = gameHistory.get(0).getFromNode();
         }
         this.keyStream = runHierholzer(startNode);
     }
 
+
+
+    // בונה גרף מעגלי מכוון
+    // הפונקציה הכרחית כי היא נותנת - הבטחת קשירות חזקה (Strong Connectivity)
+    // אם שחקנים שיחקו רק על כמה צמתים בודדים אז מקבלים רק אותם - אני רציתי שכולם יהיה קשורים
     private void buildBaseRing() {
         for (int i = 0; i < numNodes; i++) {
+            // בזכות מודולו זה יוצר מעגל בסוף
             int nextNode = (i + 1) % numNodes;
             adjList[i].add(nextNode);
         }
     }
 
+    // מעדכנת בad את היסטוריית המהלכים - כל מהחל שבוצע זה מוסיף לצומת שממנו יצאה המהלך את השכן שהוא היעד של המהלך
     private void overlayHistory(List<Move> history) {
         for (Move move : history) {
             adjList[move.getFromNode()].add(move.getToNode());
@@ -55,10 +72,19 @@ public class EulerianCryptoGraph {
         }
     }
 
+
+
+
+    // כדי שאלגוריתם  Hierholzer יצליח למצוא מעגל אוילרי, חייב להתקיים חוק האיזון
+    //   בגרף מכוון: לכל צומת בנפרד, מספר החצים שנכנסים אליו חייב להיות שווה בדיוק למספר החצים שיוצאים ממנו.
+    // פונקציה זו נועדה לאזן את הגרף אם צריך ..
     public void balanceGraph() {
         int[] inDegree  = new int[numNodes];
         int[] outDegree = new int[numNodes];
 
+
+
+        // מילוי המערכים , סופר כמה קשתות נכנסות יש וכמה יוצאות עבור כל קשת
         for (int i = 0; i < numNodes; i++) {
             outDegree[i] = adjList[i].size();
             for (int target : adjList[i]) {
@@ -66,7 +92,12 @@ public class EulerianCryptoGraph {
             }
         }
 
+
+        // כמובן הם כל הזמן משתנות הדרישה לכניסה ויציאה בהתאם למהלכי המשחק
+        // אותו צומת יכולה להופיע כמה פעמים
+        // צמתים שיש להם יותר מדי כניסות, ולכן הם חייבים שייצאו מהם עוד חצים כדי להתאזן.
         List<Integer> needsOut = new ArrayList<>();
+        // : צמתים שיש להם יותר מדי יציאות, ולכן הם חייבים שייכנסו אליהם עוד חצים.
         List<Integer> needsIn  = new ArrayList<>();
 
         for (int i = 0; i < numNodes; i++) {
@@ -78,6 +109,8 @@ public class EulerianCryptoGraph {
             }
         }
 
+
+        // הכניסות החסרות שווה תמיד לסך היציאות החסרות
         for (int i = 0; i < needsOut.size(); i++) {
             adjList[needsOut.get(i)].add(needsIn.get(i));
         }
@@ -86,12 +119,14 @@ public class EulerianCryptoGraph {
     public List<Integer> runHierholzer(int startNode) {
 
 
+        // ממיין בשביל דטרמיניזם
         for (int i = 0; i < numNodes; i++) {
             if (adjList[i].size() > 1) {
                 Sorter.mergeSortList(adjList[i], 0, adjList[i].size() - 1);
             }
         }
 
+        // עותק זמני כי אני לא רוצה להרוס את המקור
         List<Integer>[] tempAdj = new ArrayList[numNodes];
         for (int i = 0; i < numNodes; i++) {
             tempAdj[i] = new ArrayList<>(adjList[i]);
@@ -112,6 +147,8 @@ public class EulerianCryptoGraph {
             }
         }
 
+
+        // צומת נכנס לרשימת הסיכום (circuit) אך ורק כשהוא נתקע במבוי סתום (כשאין ממנו יותר קשתות פנויות ב-tempAdj).
         return manualReverse(circuit);
     }
 

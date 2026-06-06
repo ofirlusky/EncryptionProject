@@ -10,6 +10,8 @@ import java.awt.*;
 
 public class BoardPanel extends JPanel {
 
+
+    // הגשר בין ה gui ללוגיקת המשחק
     private PicariaGame game;
     private JLabel statusLabel;
 
@@ -17,12 +19,18 @@ public class BoardPanel extends JPanel {
     private JButton continueButton;
     private boolean cryptoLaunched = false;
 
+
+
+
     public BoardPanel(PicariaGame game, JLabel statusLabel) {
         this.game = game;
         this.statusLabel = statusLabel;
         setBackground(Color.black);
         setLayout(null);   // מיקום ידני לכפתור
 
+
+        // handleMouseClick כל פעם שיש לחיצה נקראת הפונקציה
+        // מאזין ללחיצה על המסך למען ביצוע המשחק
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -30,7 +38,7 @@ public class BoardPanel extends JPanel {
             }
         });
 
-        // כפתור "המשך לקריפטו" — מוסתר עד ניצחון
+        // כפתור "המשך לקריפטו" - מוסתר עד ניצחון
         continueButton = new JButton("CONTINUE TO CRYPTO →");
         continueButton.setFont(new Font("Arial", Font.BOLD, 18));
         continueButton.setBackground(new Color(46, 160, 67));
@@ -42,6 +50,8 @@ public class BoardPanel extends JPanel {
         add(continueButton);
     }
 
+
+    // כל פעם שיש לחיצה במשחק הפונקציה נקראת ומקבלת את הקורדינאטות
     private void handleMouseClick(int mouseX, int mouseY) {
         if (game.isGameOver()) return;   // אחרי ניצחון לא מקבלים קליקים
 
@@ -53,6 +63,7 @@ public class BoardPanel extends JPanel {
 
             double distance = Math.sqrt(Math.pow(mouseX - nodeX, 2) + Math.pow(mouseY - nodeY, 2));
 
+            // אם הקליק קרוב מ-30 פיקסלים למרכז הצומת - זה הצומת שנלחץ.
             if (distance < 30) {
                 System.out.println("Clicked on node: " + i);
                 game.playTurn(i);

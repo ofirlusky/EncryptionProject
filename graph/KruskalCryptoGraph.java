@@ -13,6 +13,7 @@ public class KruskalCryptoGraph extends BaseCryptoGraph {
 
     //  משמש לאחסון זמני של כל המשקלים בהתאם למצב המשחק
     private KruskalEdge[] allFrictionEdges;
+
     // מספר הקשתות שהוכנסו
     private int edgeCount;
 

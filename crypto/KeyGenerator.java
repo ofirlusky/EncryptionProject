@@ -5,21 +5,33 @@ import java.util.List;
 
 public class KeyGenerator {
 
+
+    // מועד לפעולת מודולו זה מספר ראשוני שנועד לפזר את הערכים
+    //  השאריות מתפזרות בצורה קשה מאוד לעקוב אחריהן לאחור
     private static final long MODULUS   = 36389L;
     private static final long GENERATOR = 1500L;
+
+
+    // זה קבוע שאומר בעצם שאני רוצה ליצור מפתח בגודל 256 ביט
     private static final int  KEY_BYTES = 32;
 
     // קבועי ערבוב (בהשראת קבועי SHA / FNV — מספרים ראשוניים גדולים)
-    private static final int PRIME_A = 0x9E3779B1;   // יחס  (Knuth)
+    // אלו הם מספרים ראשוניים גדולים מאוד שנקראים  "Magic Numbers", והם משמשים באלגוריתמים מפורסמים של חתימות (Hash) כמו MurmurHash.שלקחתי השראה מהם ועשיתי פה
+    private static final int PRIME_A = 0x9E3779B1;
     private static final int PRIME_B = 0x85EBCA77;
     private static final int PRIME_C = 0xC2B2AE3D;
 
+
+
+    // פולינום מתמטי שיעזור לעשות את המספר בלתי צפוי
     private static int functionL(int x) {
         return x * x - 2 * x + 223;
     }
 
 
 
+    // מקבלת את כל התוצרים הסופיים של האלגוריתמים ומרכיבה את מפתח ההצפנה !
+    //
     public static byte[] generateKey(int[][] kruskalMatrix,
                                      int[][] maxFlowMatrix,
                                      int[][] bitwiseMatrix,
@@ -31,6 +43,8 @@ public class KeyGenerator {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
+                // ממיר קורדינטות של דו ממדי לחד ממדי רציף
+                // ושם את תוצאת הxor של כל איבר בהתאמה במערך
                 flat[i * n + j] = kruskalMatrix[i][j]
                         ^ maxFlowMatrix[i][j]
                         ^ bitwiseMatrix[i][j];
@@ -40,8 +54,8 @@ public class KeyGenerator {
 
 
         for (int i = 0; i < eulerStream.size(); i++) {
-            int v     = eulerStream.get(i);
-            int lv    = functionL(v);
+            int v = eulerStream.get(i);
+            int lv = functionL(v);
             int mixed = lv ^ (i * 31) ^ (v * 17);
 
 
@@ -53,9 +67,10 @@ public class KeyGenerator {
         }
 
 
+
         byte[] seed = new byte[KEY_BYTES];
         for (int i = 0; i < flat.length; i++) {
-            seed[i % KEY_BYTES]            ^= (byte)( flat[i]        & 0xFF);
+            seed[i % KEY_BYTES] ^= (byte)( flat[i] & 0xFF);
             seed[(i * 3 + 7) % KEY_BYTES]  ^= (byte)((flat[i] >>  8) & 0xFF);
             seed[(i * 5 + 3) % KEY_BYTES]  ^= (byte)((flat[i] >> 16) & 0xFF);
             seed[(i * 7 + 1) % KEY_BYTES]  ^= (byte)((flat[i] >> 24) & 0xFF);

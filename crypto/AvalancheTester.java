@@ -14,24 +14,45 @@ import java.util.List;
 public class AvalancheTester {
 
     public static class AvalancheResult {
+
+
+        // מייצג את מפתח ההצפנה הרגיל לפני השינוי
         public byte[] originalKey;
+
+
+        // מייצג את מפתח ההצפנה החדש לאחר שנהפך ביט אחד
         public byte[] modifiedKey;
-        public int    totalBits;
-        public int    changedBits;
+
+        // מספר הביטים הכולל (256)
+        public int totalBits;
+
+        // מספר הביטים ששונו
+        public int changedBits;
+
+        // תיאור של מה קרה
         public String changeDescription;
-        public int    flippedBitIndex;
+
+        // מספר סידורי של הביט הספציפי שנבחר להפוך
+        public int flippedBitIndex;
+
+        // ייצוג טקסטואלי של הלוח לפני השינוי
         public String boardBitsBefore;
+
+        // ייצוג של הלוח אחרי השינוי
         public String boardBitsAfter;
     }
 
+    // תיאור של כמה ביטים מייצגים כל משבצת
     private static final int BITS_PER_CELL = 2;
 
 
 
+
+    //
     public static AvalancheResult runAvalanche(Node[] board, List<Move> gameHistory) {
         AvalancheResult r = new AvalancheResult();
 
-        // מפתח מקורי
+        // מפתח מקורי יוצרים אותו ושומרים
         r.originalKey = computeKey(board, gameHistory);
 
         // קידוד הלוח לרצף ביטים (26 ביטים)
@@ -46,7 +67,7 @@ public class AvalancheTester {
         flipped[flipIndex] ^= 1;                  // XOR עם 1 = הפיכת ביט אחד
         r.boardBitsAfter = bitsToString(flipped);
 
-        // מפענחים בחזרה ללוח
+        // מפענח בחזרה ללוח
         Node[] modifiedBoard = bitsToBoard(flipped, board.length);
 
         int cellChanged = flipIndex / BITS_PER_CELL;
@@ -68,16 +89,18 @@ public class AvalancheTester {
     }
 
 
+    // דוחס את כל ה board אל ביטים
     private static int[] boardToBits(Node[] board) {
         int[] bits = new int[board.length * BITS_PER_CELL];
         for (int i = 0; i < board.length; i++) {
             int val = pieceToInt(board[i].getCurrentPieceValue());
-            bits[2 * i]     = (val >> 1) & 1;   // ביט גבוה
-            bits[2 * i + 1] =  val       & 1;   // ביט נמוך
+            bits[2 * i] = (val >> 1) & 1;   // ביט גבוה
+            bits[2 * i + 1] =  val & 1;   // ביט נמוך
         }
         return bits;
     }
 
+    // לוקח ביטים והופך אותם ל board חשוב לציין ה ייצוג הוא שני ביטים עבור מצב משחק
     private static Node[] bitsToBoard(int[] bits, int boardSize) {
         Node[] board = new Node[boardSize];
         for (int i = 0; i < boardSize; i++) {
@@ -94,6 +117,7 @@ public class AvalancheTester {
         return board;
     }
 
+    // נועד להמיר מצב אל מספר בשביל להעביר לבינארי
     private static int pieceToInt(PieceValue v) {
         switch (v) {
             case OCCUPIED_P1: return 1;
@@ -111,6 +135,7 @@ public class AvalancheTester {
     }
 
 
+    // מביא את האינדקס שבו הופכים את הביט
     private static int chooseFlipBit(int[] bits) {
         for (int i = 0; i < bits.length; i++) {
             if (bits[i] == 1) return i;
@@ -118,6 +143,8 @@ public class AvalancheTester {
         return bits.length / 2;
     }
 
+
+    // נועדה לטפל בביטים בצורה יפה יותר בשביל ההדפסה
     private static String bitsToString(int[] bits) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bits.length; i++) {
@@ -128,6 +155,7 @@ public class AvalancheTester {
     }
 
 
+    // מחזיר מפתח מוכן
     public static byte[] computeKey(Node[] board, List<Move> history) {
         BaseCryptoGraph kruskal = new KruskalCryptoGraph(board);
         BaseCryptoGraph maxFlow = new MaxFlowCryptoGraph(board);
@@ -138,6 +166,7 @@ public class AvalancheTester {
                 bitwise.getKeyMatrix(), euler.getKeyStream());
     }
 
+    // מחשב כמה ביטים שונו
     private static int hammingDistance(byte[] a, byte[] b) {
         int count = 0;
         for (int i = 0; i < Math.min(a.length, b.length); i++) {
