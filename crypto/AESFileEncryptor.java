@@ -8,18 +8,32 @@ import java.util.Arrays;
 
 public class AESFileEncryptor {
 
-    private static final int BLOCK_SIZE      = 16;
+
+    // גודל בלוק קבוע של AES איתו עובד
+    private static final int BLOCK_SIZE = 16;
+
+    // כמה בלוקים להדפיס לקונסול ..
     private static final int VERBOSE_BLOCKS  = 3;
 
+
+
+    // מופע של המחלקה שמבצע פענוח או הצפנת כל בלוק
     private final PicariaAES aes;
+
+    // נגזר מהמפתל וקטור אתחול
     private final byte[]     iv;
 
 
 
 
     public AESFileEncryptor(byte[] key) {
+        // יוצר מופע של PicariaAES ומעביר לו את המפתח המלא 32 ביטים
+        //  PicariaAES בפנים לוקח רק את 16 הבתים הראשונים ומריץ Key Schedule ליצירת 11 מפתחות סיבוב.
         this.aes = new PicariaAES(key);
 
+
+
+        // ממלא את הבלוק הדמיוני - IV
         this.iv = new byte[BLOCK_SIZE];
         for (int i = 0; i < BLOCK_SIZE; i++) {
 
@@ -30,37 +44,48 @@ public class AESFileEncryptor {
 
 
 
+    //מקבלת נתיב קובץ קלט, מצפינה אותו בשיטת AES-128 CBC, וכותבת את התוצאה לקובץ פלט
     public void encryptFile(String inputPath, String outputPath) {
         printBanner("AES-128 CBC  —  ENCRYPTION");
 
+        // קריאת הקובץ ובדיקת תקינות
         byte[] plaintext = readOrCreateFile(inputPath);
         if (plaintext == null) return;
+
+
 
         System.out.println("  Input  : " + inputPath + "  (" + plaintext.length + " bytes)");
         System.out.println("  Output : " + outputPath);
         System.out.println("  IV     : " + PicariaAES.toHex(iv) + "  (derived from key)");
-
-
         aes.printRoundKeys();
 
 
-        byte[] padded    = pkcs7Pad(plaintext);
-        int    numBlocks = padded.length / BLOCK_SIZE;
+
+        // aes עובד רק על קובץ של 16 בתים בדיוק אם לא מתחלק אז מוספים לסוף 00
+        byte[] padded = pkcs7Pad(plaintext);
+        int numBlocks = padded.length / BLOCK_SIZE;
 
         System.out.println("\n  Plaintext  (hex): " + PicariaAES.toHex(plaintext));
         System.out.println("  Padded size     : " + padded.length + " bytes  →  " + numBlocks + " blocks");
         System.out.println("\n  ── Block-by-block encryption ─────────────────────────────────");
 
+        // מערך שיכיל את כל הצופן
         byte[] ciphertext = new byte[padded.length];
-        byte[] prev       = iv.clone();
+        // הבלוק הקודם כל פעם מתחיל עם IV
+        byte[] prev = iv.clone();
 
         for (int i = 0; i < numBlocks; i++) {
+            // חותך בלוק של 16 בתים מהקובץ
             byte[] plain = Arrays.copyOfRange(padded, i * BLOCK_SIZE, (i+1) * BLOCK_SIZE);
 
 
+            // כל בלוק עובר xor עם הבלוק הקודם
             byte[] xored     = xorBlocks(plain, prev);
+            // מריץ 10 סיבובי aes על הבלוק לאחר xor
             byte[] encrypted = aes.encryptBlock(xored);
 
+
+            // מעתיק למיקום הנכון
             System.arraycopy(encrypted, 0, ciphertext, i * BLOCK_SIZE, BLOCK_SIZE);
             prev = encrypted;
 
@@ -101,7 +126,7 @@ public class AESFileEncryptor {
 
         byte[] fileIv     = Arrays.copyOfRange(fileData, 0, BLOCK_SIZE);
         byte[] ciphertext = Arrays.copyOfRange(fileData, BLOCK_SIZE, fileData.length);
-        int    numBlocks  = ciphertext.length / BLOCK_SIZE;
+        int numBlocks  = ciphertext.length / BLOCK_SIZE;
 
         System.out.println("  Input  : " + inputPath + "  (" + fileData.length + " bytes)");
         System.out.println("  Output : " + outputPath);
@@ -150,6 +175,8 @@ public class AESFileEncryptor {
 
 
 
+    //  AES עובד רק על בלוקים של 16 בתים. אם הקובץ לא מתחלק ב-16  מוסיפה בתים בסוף כדי להשלים
+    // . כל בית שמתווסף שווה למספר הבתים שהתווספו. למשל חסרים 5 בתים  מוסיפים 5 בתים שכולם הערך 5.
     private byte[] pkcs7Pad(byte[] data) {
         int padLen = BLOCK_SIZE - (data.length % BLOCK_SIZE);
         byte[] padded = new byte[data.length + padLen];
@@ -159,7 +186,8 @@ public class AESFileEncryptor {
         return padded;
     }
 
-    // מסיר padding
+
+    // מסיר padding עושה הפוך
     private byte[] pkcs7Unpad(byte[] data) {
         if (data.length == 0) return data;
         int padLen = data[data.length - 1] & 0xFF;
@@ -167,7 +195,7 @@ public class AESFileEncryptor {
         return Arrays.copyOfRange(data, 0, data.length - padLen);
     }
 
-    // xor
+    // xor בין הבלוקים של הaes
     private byte[] xorBlocks(byte[] a, byte[] b) {
         byte[] result = new byte[BLOCK_SIZE];
         for (int i = 0; i < BLOCK_SIZE; i++)
@@ -201,6 +229,7 @@ public class AESFileEncryptor {
         return readFile(path);
     }
 
+    // פונקציית עזר לקריאת קובץ
     private byte[] readFile(String path) {
         try {
             return Files.readAllBytes(Paths.get(path));

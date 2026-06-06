@@ -10,27 +10,18 @@ import java.awt.*;
 
 public class BoardPanel extends JPanel {
 
-
-    // הגשר בין ה gui ללוגיקת המשחק
     private PicariaGame game;
     private JLabel statusLabel;
 
-    // כפתור שמופיע רק כשיש מנצח
     private JButton continueButton;
     private boolean cryptoLaunched = false;
-
-
-
 
     public BoardPanel(PicariaGame game, JLabel statusLabel) {
         this.game = game;
         this.statusLabel = statusLabel;
         setBackground(Color.black);
-        setLayout(null);   // מיקום ידני לכפתור
+        setLayout(null);
 
-
-        // handleMouseClick כל פעם שיש לחיצה נקראת הפונקציה
-        // מאזין ללחיצה על המסך למען ביצוע המשחק
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -38,22 +29,21 @@ public class BoardPanel extends JPanel {
             }
         });
 
-        // כפתור "המשך לקריפטו" - מוסתר עד ניצחון
-        continueButton = new JButton("CONTINUE TO CRYPTO →");
-        continueButton.setFont(new Font("Arial", Font.BOLD, 18));
+        continueButton = new JButton("CONTINUE TO CRYPTO  \u2192");
+        continueButton.setFont(new Font("Arial", Font.BOLD, 22));
         continueButton.setBackground(new Color(46, 160, 67));
-        continueButton.setForeground(Color.BLACK);
+        continueButton.setForeground(Color.WHITE);
         continueButton.setFocusPainted(false);
-        continueButton.setBounds(160, 600, 300, 50);
+        continueButton.setBorderPainted(true);
+        continueButton.setBorder(BorderFactory.createLineBorder(Color.WHITE, 3));
+        continueButton.setBounds(80, 520, 460, 70);
         continueButton.setVisible(false);
         continueButton.addActionListener(e -> launchCrypto());
         add(continueButton);
     }
 
-
-    // כל פעם שיש לחיצה במשחק הפונקציה נקראת ומקבלת את הקורדינאטות
     private void handleMouseClick(int mouseX, int mouseY) {
-        if (game.isGameOver()) return;   // אחרי ניצחון לא מקבלים קליקים
+        if (game.isGameOver()) return;
 
         int padding = 100;
         int scale = 100;
@@ -63,7 +53,6 @@ public class BoardPanel extends JPanel {
 
             double distance = Math.sqrt(Math.pow(mouseX - nodeX, 2) + Math.pow(mouseY - nodeY, 2));
 
-            // אם הקליק קרוב מ-30 פיקסלים למרכז הצומת - זה הצומת שנלחץ.
             if (distance < 30) {
                 System.out.println("Clicked on node: " + i);
                 game.playTurn(i);
@@ -74,19 +63,15 @@ public class BoardPanel extends JPanel {
         }
     }
 
-
     private void launchCrypto() {
         if (cryptoLaunched) return;
         cryptoLaunched = true;
 
-        // מאתר את חלון המשחק (ה-JFrame ההורה) וסוגר אותו
         Window gameWindow = SwingUtilities.getWindowAncestor(this);
-
-        // פותח את חלון הקריפטו עם נתוני המשחק
         new CryptoResultGUI(game.getBoard(), game.getGameHistory());
 
         if (gameWindow != null) {
-            gameWindow.dispose();   // סוגר את חלון המשחק
+            gameWindow.dispose();
         }
     }
 
@@ -112,12 +97,14 @@ public class BoardPanel extends JPanel {
                 g.drawLine(x1, y1, x2, y2);
             }
         }
+
         for (int i = 0; i < PicariaGame.TOTAL_NODES; i++) {
             int screenX = padding + (PicariaGame.COORDS[i][0] * scale);
             int screenY = padding + (PicariaGame.COORDS[i][1] * scale);
 
             g.setColor(Color.WHITE);
             g.fillOval(screenX - nodeOffset, screenY - nodeOffset, nodeSize, nodeSize);
+
             Node selected = game.getSelectedNode();
             if (selected != null && selected.getIDofNode() == i) {
                 Graphics2D g2d = (Graphics2D) g;
@@ -144,8 +131,6 @@ public class BoardPanel extends JPanel {
                     ? "Player 1 (Blue)" : "Player 2 (Red)";
             statusLabel.setText("GAME OVER - " + winner + " wins!");
             statusLabel.setForeground(Color.YELLOW);
-
-            // מציג את כפתור ההמשך לקריפטו
             continueButton.setVisible(true);
             repaint();
             return;

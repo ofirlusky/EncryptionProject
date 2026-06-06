@@ -20,26 +20,32 @@ import java.util.List;
 
 public class CryptoResultGUI extends JFrame {
 
+    // מגיעים כמובן מהמשחק ומועברים לאלגוריתמים
     private final Node[]     finalBoard;
     private final List<Move> gameHistory;
 
+    // קבועים לקבצים
     private static final String ENCRYPTED_FILE = "secret_encrypted.bin";
     private static final String DECRYPTED_FILE  = "secret_decrypted.txt";
     private static final String DEFAULT_INPUT   = "secret.txt";
 
+    // הקובץ שהמשתמש בחר והנתיב שלו - כמובן זה מתעדכן
     private File   selectedInputFile = null;
-    private String inputFilePath     = DEFAULT_INPUT;
+    private String inputFilePath = DEFAULT_INPUT;
 
-    private JTextArea    statusArea;
-    private JLabel       fileLabel;
-    private JButton      startButton, chooseButton, autoButton;
-    private JButton      openOriginal, openEncrypted, openDecrypted;
+
+    // GUI
+    private JTextArea  statusArea;
+    private JLabel fileLabel;
+    private JButton startButton, chooseButton, autoButton;
+    private JButton openOriginal, openEncrypted, openDecrypted;
     private JProgressBar progressBar;
 
     private JTextArea proofArea;
     private JButton   runProofButton;
 
-    private static final Color BG    = new Color(33, 37, 43);
+    // צבעים
+    private static final Color BG = new Color(33, 37, 43);
     private static final Color PANEL = new Color(40, 44, 52);
     private static final Color GREEN = new Color(46, 160, 67);
     private static final Color TEXT  = new Color(220, 220, 220);
@@ -50,11 +56,13 @@ public class CryptoResultGUI extends JFrame {
         this.finalBoard  = finalBoard;
         this.gameHistory = gameHistory;
 
+        // הגדרות החלון
         setTitle("Picaria Crypto");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(860, 680);
         setLocationRelativeTo(null);
 
+        // יצירת לשוניות
         JTabbedPane tabs = new JTabbedPane();
         tabs.setFont(new Font("Arial", Font.BOLD, 14));
         tabs.addTab("  Encryption  ",       buildEncryptionTab());
@@ -66,6 +74,7 @@ public class CryptoResultGUI extends JFrame {
 
 
 
+    // בונה את הלשונית הראשונה
     private JPanel buildEncryptionTab() {
         JPanel root = new JPanel(new BorderLayout());
         root.setBackground(BG);
@@ -87,6 +96,7 @@ public class CryptoResultGUI extends JFrame {
 
         JPanel filePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 12));
         filePanel.setBackground(PANEL);
+        // שני כפתורים עם מאזין כל אחד מותאם לפונקציה שיפעל
         chooseButton = styledButton("Choose a file...", false);
         autoButton   = styledButton("Create one automatically", false);
         chooseButton.addActionListener(e -> chooseFile());
@@ -98,6 +108,7 @@ public class CryptoResultGUI extends JFrame {
         fileLabel.setForeground(Color.ORANGE);
         fileLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // מקים מאזין ללחיצה של start שמתחיל את כל התהליך האמיתי
         startButton = styledButton("START", true);
         startButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         startButton.addActionListener(e -> startProcess());
